@@ -71,15 +71,15 @@
               placeholder="描述你需要的网站类型或功能..."
               class="w-full pl-12 pr-4 py-4 border-2 border-slate-200 dark:border-slate-600 rounded-2xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-slate-800 dark:text-white transition-all duration-300 group-hover:border-slate-300 dark:group-hover:border-slate-500 text-lg"
             />
-            <Icon name="heroicons:sparkles" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 transition-colors">✨</span>
           </div>
           <button
             @click="generateRecommendations"
             :disabled="isGenerating"
             class="mt-4 btn-primary bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 flex items-center space-x-2 mx-auto"
           >
-            <Icon v-if="isGenerating" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-            <Icon v-else name="heroicons:sparkles" class="w-4 h-4" />
+            <span v-if="isGenerating" class="animate-spin">🔄</span>
+            <span v-else>✨</span>
             <span>{{ isGenerating ? '生成中...' : '生成推荐' }}</span>
           </button>
         </div>
@@ -88,7 +88,7 @@
       <!-- 推荐结果 -->
       <div v-if="recommendations.length > 0" class="space-y-6">
         <h2 class="text-2xl font-semibold text-slate-900 dark:text-white flex items-center">
-          <Icon name="heroicons:light-bulb" class="w-6 h-6 mr-2 text-yellow-500" />
+          <span class="mr-2">💡</span>
           为你推荐
         </h2>
         
@@ -105,9 +105,7 @@
               <!-- 头部 -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center space-x-3 flex-1 min-w-0">
-                  <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-700 dark:to-purple-600 rounded-xl flex items-center justify-center shadow-sm text-2xl">
-                    🚀
-                  </div>
+                  <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-700 dark:to-purple-600 rounded-xl flex items-center justify-center shadow-sm text-2xl">🚀</div>
                   <div class="flex-1 min-w-0">
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors truncate">
                       {{ recommendation.name }}
@@ -125,14 +123,12 @@
               </p>
 
               <!-- 推荐理由 -->
-              <div class="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                <div class="flex items-start space-x-2">
-                  <Icon name="heroicons:sparkles" class="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                  <p class="text-sm text-purple-700 dark:text-purple-300">
-                    {{ recommendation.reason }}
-                  </p>
-                </div>
-              </div>
+               <div class="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                 <div class="flex items-start space-x-2">
+                   <span class="mt-0.5 flex-shrink-0">✨</span>
+                   <p class="text-sm text-purple-700 dark:text-purple-300">{{ recommendation.reason }}</p>
+                 </div>
+               </div>
 
               <!-- 标签 -->
               <div class="flex flex-wrap gap-2 mb-6">
@@ -147,20 +143,20 @@
 
               <!-- 操作按钮 -->
               <div class="flex space-x-2">
-                <a
+                 <a
                   :href="recommendation.url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex-1 btn-primary bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 flex items-center justify-center space-x-2"
+                   class="flex-1 btn-primary bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 flex items-center justify-center space-x-2"
                 >
-                  <Icon name="heroicons:arrow-top-right-on-square" class="w-4 h-4" />
-                  <span>访问</span>
+                   <span>🔗</span>
+                   <span>访问</span>
                 </a>
                 <button
                   @click="addToCollection(recommendation)"
                   class="px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
                 >
-                  <Icon name="heroicons:plus" class="w-4 h-4" />
+                   <span>➕</span>
                 </button>
               </div>
             </div>
@@ -170,9 +166,7 @@
 
       <!-- 空状态 -->
       <div v-else-if="!isGenerating" class="text-center py-16">
-        <div class="w-24 h-24 mx-auto mb-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
-          <Icon name="heroicons:sparkles" class="w-12 h-12 text-slate-400" />
-        </div>
+        <div class="w-24 h-24 mx-auto mb-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">✨</div>
         <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">开始你的AI推荐之旅</h3>
         <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">
           输入你的需求，AI将为你推荐最相关的优质网站
@@ -181,9 +175,7 @@
 
       <!-- 加载状态 -->
       <div v-if="isGenerating" class="text-center py-16">
-        <div class="w-24 h-24 mx-auto mb-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
-          <Icon name="heroicons:arrow-path" class="w-12 h-12 text-purple-500 animate-spin" />
-        </div>
+        <div class="w-24 h-24 mx-auto mb-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center"><span class="animate-spin">🔄</span></div>
         <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">AI正在思考...</h3>
         <p class="text-slate-500 dark:text-slate-400">
           正在为你生成个性化推荐
@@ -195,6 +187,7 @@
 
 <script setup lang="ts">
 import type { AIRecommendation } from '~/types'
+import { dataManager } from '~/utils/dataManager'
 
 const route = useRoute()
 const store = useNavigationStore()
@@ -247,7 +240,7 @@ const generateRecommendations = async () => {
 }
 
 const addToCollection = (recommendation: AIRecommendation) => {
-  store.addWebsite({
+  dataManager.addWebsite({
     name: recommendation.name,
     url: recommendation.url,
     description: recommendation.description,
@@ -255,7 +248,8 @@ const addToCollection = (recommendation: AIRecommendation) => {
     rating: 4.5,
     tags: recommendation.tags,
     isFeatured: false,
-    viewCount: 0
+    viewCount: 0,
+    isFavorite: false
   })
   
   alert('已添加到收藏！')

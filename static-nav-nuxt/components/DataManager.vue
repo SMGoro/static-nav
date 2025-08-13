@@ -59,7 +59,7 @@
                 class="hidden"
               />
               <button
-                @click="$refs.fileInput.click()"
+                @click="fileInput && fileInput.click()"
                 class="w-full btn-secondary flex items-center justify-center space-x-2"
               >
                 <span>📁</span>

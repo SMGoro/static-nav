@@ -1,0 +1,66 @@
+# 云原生开发工作区配置
+version: "1.0"
+
+# 开发环境配置
+environment:
+  # 使用自定义 Dockerfile
+  dockerfile: "./Dockerfile"
+  
+  # 端口映射配置
+  ports:
+    - "3000:3000"  # Nuxt 默认端口
+    - "5173:5173"  # Vite 默认端口
+    - "8080:8080"  # 备用端口
+  
+  # 环境变量
+  env:
+    NODE_ENV: "development"
+    PNPM_HOME: "/root/.local/share/pnpm"
+  
+  # 工作目录
+  working_dir: "/workspace"
+  
+  # 启动命令
+  startup_commands:
+    - "echo '正在初始化开发环境...'"
+    - "pnpm --version"
+    - "node --version"
+    - "echo '开发环境准备就绪！'"
+
+# 开发工具配置
+tools:
+  # 代码编辑器
+  editor:
+    type: "vscode"
+    extensions:
+      - "ms-vscode.vscode-typescript-next"
+      - "bradlc.vscode-tailwindcss"
+      - "esbenp.prettier-vscode"
+      - "ms-vscode.vscode-eslint"
+      - "Vue.volar"
+      - "ms-vscode.vscode-json"
+  
+  # 终端配置
+  terminal:
+    shell: "/bin/sh"
+    working_dir: "/workspace"
+
+# 项目配置
+projects:
+  - name: "static-nav-vite"
+    path: "./static-nav-vite"
+    type: "vite"
+    dev_command: "pnpm dev"
+    build_command: "pnpm build"
+    
+  - name: "static-nav-nuxt"
+    path: "./static-nav-nuxt"
+    type: "nuxt"
+    dev_command: "pnpm dev"
+    build_command: "pnpm build"
+    
+  - name: "static-nav-origin"
+    path: "./static-nav-origin"
+    type: "react"
+    dev_command: "npm start"
+    build_command: "npm run build"

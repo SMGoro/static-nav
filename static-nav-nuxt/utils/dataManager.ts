@@ -242,6 +242,8 @@ export class DataManager {
 
   // 从URL加载数据
   loadFromUrl(): NavigationData | null {
+    if (typeof window === 'undefined') return null
+    
     const urlParams = new URLSearchParams(window.location.search)
     const encodedData = urlParams.get('data')
     
@@ -276,6 +278,7 @@ export class DataManager {
 
   // 保存到本地存储
   private saveToLocalStorage(data: NavigationData): void {
+    if (typeof window === 'undefined') return
     try {
       localStorage.setItem('static-nav-data', JSON.stringify(data))
     } catch (error) {
@@ -285,6 +288,7 @@ export class DataManager {
 
   // 从本地存储加载
   private loadFromLocalStorage(): NavigationData | null {
+    if (typeof window === 'undefined') return null
     try {
       const savedData = localStorage.getItem('static-nav-data')
       if (savedData) {
@@ -298,6 +302,7 @@ export class DataManager {
 
   // 清除本地存储
   clearLocalStorage(): void {
+    if (typeof window === 'undefined') return
     try {
       localStorage.removeItem('static-nav-data')
     } catch (error) {

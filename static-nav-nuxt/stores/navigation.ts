@@ -14,6 +14,7 @@ export const useNavigationStore = defineStore('navigation', () => {
       tags: ['AI工具', '付费', 'AI助手', '聊天'],
       viewCount: 9876,
       isFeatured: true,
+      isFavorite: false,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01'
     },
@@ -27,6 +28,7 @@ export const useNavigationStore = defineStore('navigation', () => {
       tags: ['设计工具', '付费', 'UI/UX'],
       viewCount: 8765,
       isFeatured: true,
+      isFavorite: true,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01'
     },
@@ -40,6 +42,7 @@ export const useNavigationStore = defineStore('navigation', () => {
       tags: ['开发工具', '代码托管'],
       viewCount: 12345,
       isFeatured: true,
+      isFavorite: false,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01'
     },
@@ -53,6 +56,7 @@ export const useNavigationStore = defineStore('navigation', () => {
       tags: ['AI工具', '付费', 'AI绘画', '图像生成', '英语'],
       viewCount: 6543,
       isFeatured: false,
+      isFavorite: false,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01'
     },
@@ -66,6 +70,7 @@ export const useNavigationStore = defineStore('navigation', () => {
       tags: ['生产力工具', '付费', '笔记', '数据库'],
       viewCount: 7654,
       isFeatured: false,
+      isFavorite: true,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01'
     },
@@ -79,6 +84,7 @@ export const useNavigationStore = defineStore('navigation', () => {
       tags: ['开发工具', '代码编辑器', 'IDE'],
       viewCount: 10987,
       isFeatured: false,
+      isFavorite: false,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01'
     }

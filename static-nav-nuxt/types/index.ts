@@ -8,6 +8,7 @@ export interface Website {
   tags: string[]
   viewCount: number
   isFeatured: boolean
+  isFavorite: boolean
   createdAt: string
   updatedAt: string
 }

@@ -113,7 +113,7 @@
           <div class="text-sm text-slate-600 dark:text-slate-400">精选网站</div>
         </div>
         <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 text-center border border-slate-200/50 dark:border-slate-700/50">
-          <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ allTags.length }}</div>
+          <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ (allTags || []).length }}</div>
           <div class="text-sm text-slate-600 dark:text-slate-400">标签分类</div>
         </div>
         <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 text-center border border-slate-200/50 dark:border-slate-700/50">
@@ -129,12 +129,12 @@
           <button
             @click="clearFilters"
             class="px-3 py-1.5 text-sm rounded-full transition-all duration-200"
-            :class="selectedTags.length === 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'"
+            :class="(selectedTags || []).length === 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'"
           >
             全部
           </button>
           <button
-            v-for="tag in allTags.slice(0, 8)"
+            v-for="tag in (allTags || []).slice(0, 8)"
             :key="tag"
             @click="toggleTag(tag)"
             class="px-3 py-1.5 text-sm rounded-full transition-all duration-200"
@@ -142,8 +142,8 @@
           >
             {{ tag }}
           </button>
-          <span v-if="allTags.length > 8" class="px-3 py-1.5 text-sm text-slate-500 dark:text-slate-400">
-            +{{ allTags.length - 8 }}
+          <span v-if="(allTags || []).length > 8" class="px-3 py-1.5 text-sm text-slate-500 dark:text-slate-400">
+            +{{ Math.max(0, (allTags || []).length - 8) }}
           </span>
         </div>
 
@@ -186,7 +186,7 @@
         :class="layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'"
       >
         <div
-          v-for="website in filteredAndSortedWebsites"
+          v-for="website in (filteredAndSortedWebsites || [])"
           :key="website.id"
           class="group relative overflow-hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
           :class="layout === 'list' ? 'flex items-center space-x-4' : ''"
@@ -239,7 +239,7 @@
             <!-- 标签 -->
             <div class="flex flex-wrap gap-2 mb-6" :class="layout === 'list' ? 'flex-1' : ''">
               <span
-                v-for="tag in website.tags.slice(0, 3)"
+                v-for="tag in (website.tags || []).slice(0, 3)"
                 :key="tag"
                 class="tag text-xs px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105"
                 :class="selectedTags.includes(tag) ? 'tag-primary shadow-sm scale-105' : ''"
@@ -247,10 +247,10 @@
                 {{ tag }}
               </span>
               <span
-                v-if="website.tags.length > 3"
+                v-if="(website.tags || []).length > 3"
                 class="tag text-xs px-2.5 py-1 rounded-full text-slate-500 bg-slate-100 dark:bg-slate-700"
               >
-                +{{ website.tags.length - 3 }}
+                +{{ Math.max(0, (website.tags || []).length - 3) }}
               </span>
             </div>
 
@@ -295,13 +295,13 @@
       </div>
 
       <!-- 空状态 -->
-      <div v-if="filteredAndSortedWebsites.length === 0" class="text-center py-16">
+      <div v-if="(filteredAndSortedWebsites || []).length === 0" class="text-center py-16">
         <div class="w-24 h-24 mx-auto mb-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
           <span class="text-4xl">🔍</span>
         </div>
         <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">没有找到网站</h3>
         <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">
-          {{ searchQuery || selectedTags.length > 0 ? '尝试调整搜索条件或筛选标签' : '开始添加你的第一个网站吧，构建你的个人知识库' }}
+          {{ searchQuery || (selectedTags || []).length > 0 ? '尝试调整搜索条件或筛选标签' : '开始添加你的第一个网站吧，构建你的个人知识库' }}
         </p>
         <button
           @click="showAddModal = true"
@@ -320,6 +320,9 @@
       @close="closeWebsiteModal"
       @saved="handleWebsiteSaved"
     />
+
+    <!-- 分享对话框（按需：若从 origin 引用，可在卡片或详情触发）-->
+    <!-- <ShareDialog :is-open="showShare" :website="shareWebsite" @close="showShare = false" /> -->
 
     <!-- 数据管理模态框 -->
     <DataManager
@@ -346,9 +349,11 @@ const showFavorites = ref(false)
 const showAddModal = ref(false)
 const showDataManager = ref(false)
 const editingWebsite = ref<Website | null>(null)
+// const showShare = ref(false)
+// const shareWebsite = ref<Website | null>(null)
 
-// 数据状态 - 使用静态数据
-const websites = ref([
+// 数据状态
+const websites = ref<Website[]>([
   {
     id: '1',
     name: 'ChatGPT',
@@ -435,21 +440,25 @@ const websites = ref([
   }
 ])
 
+const navigationData = ref<NavigationData | null>(null)
+
 // 计算属性
 const allTags = computed(() => {
   const tags = new Set<string>()
-  websites.value.forEach(website => {
-    website.tags.forEach(tag => tags.add(tag))
-  })
+  if (websites.value && websites.value.length > 0) {
+    websites.value.forEach(website => {
+      ;(website.tags || []).forEach(tag => tags.add(tag))
+    })
+  }
   return Array.from(tags).sort()
 })
 
 const filteredWebsites = computed(() => {
-  let filtered = websites.value
+  let filtered = websites.value || []
 
   // 收藏过滤
   if (showFavorites.value) {
-    filtered = filtered.filter(website => website.isFavorite)
+    filtered = filtered.filter(website => website.isFavorite === true)
   }
 
   // 搜索过滤
@@ -458,14 +467,14 @@ const filteredWebsites = computed(() => {
     filtered = filtered.filter(website =>
       website.name.toLowerCase().includes(query) ||
       website.description.toLowerCase().includes(query) ||
-      website.tags.some(tag => tag.toLowerCase().includes(query))
+      (website.tags || []).some(tag => tag.toLowerCase().includes(query))
     )
   }
 
   // 标签过滤
-  if (selectedTags.value.length > 0) {
+  if ((selectedTags.value || []).length > 0) {
     filtered = filtered.filter(website =>
-      selectedTags.value.some(tag => website.tags.includes(tag))
+      (selectedTags.value || []).some(tag => (website.tags || []).includes(tag))
     )
   }
 
@@ -508,16 +517,17 @@ const filteredAndSortedWebsites = computed(() => {
   return sorted
 })
 
-const totalWebsites = computed(() => websites.value.length)
-const featuredCount = computed(() => websites.value.filter(w => w.isFeatured).length)
-const totalViews = computed(() => websites.value.reduce((sum, w) => sum + w.viewCount, 0))
+const totalWebsites = computed(() => (websites.value || []).length)
+const featuredCount = computed(() => (websites.value || []).filter(w => w.isFeatured === true).length)
+const totalViews = computed(() => (websites.value || []).reduce((sum, w) => sum + (w.viewCount || 0), 0))
 
 // 方法
 const isActive = (path: string) => {
-  return route.path === path
+  return route?.path === path
 }
 
 const formatNumber = (num: number): string => {
+  if (!num || isNaN(num)) return '0'
   if (num >= 10000) {
     return (num / 10000).toFixed(1) + '万'
   }
@@ -526,14 +536,17 @@ const formatNumber = (num: number): string => {
 
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value
-  if (isDarkMode.value) {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
+  if (typeof document !== 'undefined') {
+    if (isDarkMode.value) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
 }
 
 const toggleTag = (tag: string) => {
+  if (!selectedTags.value) selectedTags.value = []
   const index = selectedTags.value.indexOf(tag)
   if (index > -1) {
     selectedTags.value.splice(index, 1)
@@ -543,77 +556,134 @@ const toggleTag = (tag: string) => {
 }
 
 const clearFilters = () => {
-  selectedTags.value = []
-  searchQuery.value = ''
-  showFavorites.value = false
+  try {
+    selectedTags.value = []
+    searchQuery.value = ''
+    showFavorites.value = false
+  } catch (error) {
+    console.error('清除筛选失败:', error)
+  }
 }
 
 const incrementViewCount = (id: string) => {
-  const website = websites.value.find(w => w.id === id)
-  if (website) {
-    website.viewCount++
+  try {
+    dataManager.incrementViewCount(id)
+    const latest = dataManager.getData()
+    if (latest) websites.value = [...(latest.websites || [])]
+  } catch (error) {
+    console.error('更新浏览量失败:', error)
   }
 }
 
 const toggleFavorite = (id: string) => {
-  const website = websites.value.find(w => w.id === id)
-  if (website) {
-    website.isFavorite = !website.isFavorite
+  try {
+    dataManager.toggleFavorite(id)
+    const latest = dataManager.getData()
+    if (latest) websites.value = [...(latest.websites || [])]
+  } catch (error) {
+    console.error('切换收藏失败:', error)
   }
 }
 
 const editWebsite = (website: Website) => {
-  editingWebsite.value = website
-  showAddModal.value = true
+  try {
+    editingWebsite.value = website
+    showAddModal.value = true
+  } catch (error) {
+    console.error('编辑网站失败:', error)
+  }
 }
 
 const deleteWebsite = (id: string) => {
-  if (confirm('确定要删除这个网站吗？')) {
-    const index = websites.value.findIndex(w => w.id === id)
-    if (index > -1) {
-      websites.value.splice(index, 1)
-    }
+  if (typeof window !== 'undefined' && !confirm('确定要删除这个网站吗？')) return
+  try {
+    dataManager.deleteWebsite(id)
+    const latest = dataManager.getData()
+    if (latest) websites.value = [...(latest.websites || [])]
+  } catch (error) {
+    console.error('删除网站失败:', error)
   }
 }
 
 const closeWebsiteModal = () => {
-  showAddModal.value = false
-  editingWebsite.value = null
+  try {
+    showAddModal.value = false
+    editingWebsite.value = null
+  } catch (error) {
+    console.error('关闭模态框失败:', error)
+  }
 }
 
 const handleWebsiteSaved = (websiteData: Omit<Website, 'id' | 'createdAt' | 'updatedAt'>) => {
-  if (editingWebsite.value) {
-    // 编辑现有网站
-    const index = websites.value.findIndex(w => w.id === editingWebsite.value!.id)
-    if (index > -1) {
-      websites.value[index] = {
-        ...websites.value[index],
-        ...websiteData,
-        updatedAt: new Date().toISOString().split('T')[0]
-      }
+  try {
+    if (editingWebsite.value) {
+      dataManager.updateWebsite(editingWebsite.value.id, websiteData)
+    } else {
+      dataManager.addWebsite(websiteData)
     }
-  } else {
-    // 添加新网站
-    const newWebsite = {
-      ...websiteData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0]
-    } as Website
-    websites.value.unshift(newWebsite)
+    const latest = dataManager.getData()
+    if (latest) {
+      websites.value = [...(latest.websites || [])]
+      navigationData.value = latest
+    }
+  } catch (error) {
+    console.error('保存网站失败:', error)
   }
 }
 
 const handleDataUpdated = (data: NavigationData) => {
-  websites.value = data.websites
+  try {
+    dataManager.updateData(data)
+    const latest = dataManager.getData()
+    if (latest) {
+      websites.value = [...(latest.websites || [])]
+      navigationData.value = latest
+    }
+  } catch (error) {
+    console.error('更新数据失败:', error)
+  }
 }
 
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   // 检查系统偏好
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     isDarkMode.value = true
-    document.documentElement.classList.add('dark')
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.add('dark')
+    }
+  }
+
+  // 加载数据（支持URL分享/本地存储/默认JSON）
+  try {
+    const shared = dataManager.loadFromUrl()
+    if (shared) {
+      navigationData.value = shared
+      websites.value = shared.websites || []
+    } else {
+      const initial = await dataManager.loadInitialData()
+      navigationData.value = initial
+      websites.value = initial.websites || []
+    }
+  } catch (error) {
+    console.error('数据加载失败:', error)
+    // 使用默认数据作为后备
+    websites.value = [
+      {
+        id: '1',
+        name: 'ChatGPT',
+        url: 'https://chat.openai.com',
+        description: 'OpenAI开发的AI聊天助手,提供智能对话和内容生成服务',
+        icon: '🤖',
+        rating: 4.5,
+        tags: ['AI工具', '付费', 'AI助手', '聊天'],
+        viewCount: 9876,
+        isFeatured: true,
+        isFavorite: false,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      }
+    ]
   }
 })
 </script>
