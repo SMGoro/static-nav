@@ -12,17 +12,16 @@ import { categories } from '../data/mockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { WebsiteInfoService } from '../services/websiteInfoService';
-import { JinjaWebsiteService } from '../services/jinjaWebsiteService';
 import { AIService, AIConfig } from '../services/aiService';
 import { AIConfigDialog } from './AIConfigDialog';
 
-interface WebsiteFormProps {
+interface WebsiteFormEnhancedProps {
   website?: Website;
   onSave: (website: Omit<Website, 'id'>) => void;
   onCancel: () => void;
 }
 
-export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
+export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEnhancedProps) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -68,10 +67,10 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.url || !formData.description || !formData.category) {
+      setError('请填写所有必填字段');
       return;
     }
     
-    // 生成SEO友好的slug
     const generateSlug = (title: string) => {
       return title
         .toLowerCase()
@@ -85,7 +84,7 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
       addedDate: website?.addedDate || new Date().toISOString().split('T')[0],
       clicks: website?.clicks || 0,
       slug: website?.slug || generateSlug(formData.title),
-      isBuiltIn: false // 用户添加的网站
+      isBuiltIn: false
     });
   };
 
@@ -106,7 +105,7 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
     }));
   };
 
-  // 通过URL自动获取网站信息（使用jinja模板）
+  // 通过URL自动获取网站信息
   const handleAutoFill = async () => {
     if (!formData.url.trim()) {
       setError('请输入网站URL');
@@ -117,8 +116,8 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
     setError('');
 
     try {
-      const jinjaWebsiteService = new JinjaWebsiteService(aiConfig);
-      const websiteInfo = await jinjaWebsiteService.getWebsiteInfo(formData.url);
+      const websiteInfoService = new WebsiteInfoService(aiConfig);
+      const websiteInfo = await websiteInfoService.getWebsiteInfo(formData.url);
       
       setFormData(prev => ({
         ...prev,
@@ -128,17 +127,6 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
         category: websiteInfo.category,
         tags: [...websiteInfo.tags]
       }));
-
-      // 显示jinja解析的额外信息
-      if (websiteInfo.technologies && websiteInfo.technologies.length > 0) {
-        console.log('检测到的技术栈:', websiteInfo.technologies);
-      }
-      if (websiteInfo.socialMedia) {
-        console.log('社交媒体信息:', websiteInfo.socialMedia);
-      }
-      if (websiteInfo.contactInfo) {
-        console.log('联系信息:', websiteInfo.contactInfo);
-      }
     } catch (error) {
       console.error('自动获取网站信息失败:', error);
       setError(error instanceof Error ? error.message : '自动获取失败');
@@ -220,6 +208,7 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
           </TabsTrigger>
         </TabsList>
 
+        {/* 手动添加标签页 */}
         <TabsContent value="manual" className="space-y-6">
           <Card>
             <CardHeader>
@@ -227,123 +216,124 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">网站名称 *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="输入网站名称"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="icon">图标</Label>
-                <Input
-                  id="icon"
-                  value={formData.icon}
-                  onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
-                  placeholder="🌐"
-                  className="text-center"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="url">网站链接 *</Label>
-              <Input
-                id="url"
-                type="url"
-                value={formData.url}
-                onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
-                placeholder="https://example.com"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">网站描述 *</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="输入网站描述..."
-                rows={3}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category">分类 *</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择分类" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.filter(cat => cat !== '全部').map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>标签</Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="添加标签"
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                />
-                <Button type="button" onClick={addTag} size="sm" variant="outline">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag, index) => (
-                  <Badge key={`${tag}-${index}`} variant="secondary" className="gap-1">
-                    {tag}
-                    <X 
-                      className="w-3 h-3 cursor-pointer hover:text-destructive" 
-                      onClick={() => removeTag(tag)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">网站名称 *</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="输入网站名称"
+                      required
                     />
-                  </Badge>
-                ))}
-              </div>
-            </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="icon">图标</Label>
+                    <Input
+                      id="icon"
+                      value={formData.icon}
+                      onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                      placeholder="🌐"
+                      className="text-center"
+                    />
+                  </div>
+                </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
-                />
-                <Label htmlFor="featured">设为精选</Label>
-              </div>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="url">网站链接 *</Label>
+                  <Input
+                    id="url"
+                    type="url"
+                    value={formData.url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
+                    placeholder="https://example.com"
+                    required
+                  />
+                </div>
 
-                          <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={onCancel}>
-                  取消
-                </Button>
-                <Button type="submit">
-                  {website ? '保存修改' : '添加网站'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="description">网站描述 *</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="输入网站描述..."
+                    rows={3}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category">分类 *</Label>
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择分类" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.filter(cat => cat !== '全部').map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>标签</Label>
+                  <div className="flex gap-2 mb-2">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="添加标签"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    />
+                    <Button type="button" onClick={addTag} size="sm" variant="outline">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((tag, index) => (
+                      <Badge key={`${tag}-${index}`} variant="secondary" className="gap-1">
+                        {tag}
+                        <X 
+                          className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                          onClick={() => removeTag(tag)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="featured"
+                      checked={formData.featured}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
+                    />
+                    <Label htmlFor="featured">设为精选</Label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={onCancel}>
+                    取消
+                  </Button>
+                  <Button type="submit">
+                    {website ? '保存修改' : '添加网站'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </TabsContent>
 
+        {/* URL自动获取标签页 */}
         <TabsContent value="auto" className="space-y-6">
           <Card>
             <CardHeader>
@@ -383,7 +373,7 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  输入网站URL，使用jinja模板智能解析网站信息，包括技术栈、社交媒体、联系信息等
+                  输入网站URL，AI将自动获取网站标题、描述、分类等信息
                 </p>
               </div>
 
@@ -394,7 +384,7 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
               )}
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Jinja解析结果预览</h3>
+                <h3 className="text-lg font-semibold">获取结果预览</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>网站名称</Label>
@@ -423,17 +413,6 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
                     ))}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Jinja解析信息</Label>
-                  <div className="p-3 bg-muted/30 rounded-lg text-sm">
-                    <p className="text-muted-foreground">
-                      使用jinja模板智能解析，支持技术栈检测、社交媒体信息提取、联系信息识别等高级功能。
-                    </p>
-                    <p className="text-muted-foreground mt-2">
-                      详细解析结果请查看浏览器控制台。
-                    </p>
-                  </div>
-                </div>
               </div>
 
               <div className="flex justify-end gap-2">
@@ -451,6 +430,7 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
           </Card>
         </TabsContent>
 
+        {/* AI聊天添加标签页 */}
         <TabsContent value="ai" className="space-y-6">
           <Card>
             <CardHeader>

@@ -187,7 +187,7 @@ function AppContent() {
             <div className="flex items-center justify-between">
               {/* 左侧：Logo 和导航 */}
               <div className="flex items-center min-w-0">
-                <h1 className="text-lg sm:text-xl mr-3 sm:mr-6 flex-shrink-0">导航站</h1>
+                <h1 className="text-sm sm:text-xl mr-3 sm:mr-6 flex-shrink-0">导航站</h1>
                 
                 {/* 桌面端导航 */}
                 <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">

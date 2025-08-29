@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Website } from '../types/website';
+import { SEOHead } from './SEOHead';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -7,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Progress } from './ui/progress';
 import { Separator } from './ui/separator';
-import { AIEnrichment } from './AIEnrichment';
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -24,24 +25,65 @@ import {
   MessageSquare,
   ThumbsUp,
   Eye,
-  Zap,
-  Bot
+  Zap
 } from 'lucide-react';
+import { dataManager } from '../utils/dataManager';
 
-interface WebsiteDetailProps {
-  website: Website;
-  onBack: () => void;
-  onEdit: (website: Website) => void;
-  onShare: (website: Website) => void;
-}
-
-export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetailProps) {
-  const [activeTab, setActiveTab] = useState('overview');
+export function WebsiteDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const [website, setWebsite] = useState<Website | null>(null);
   const [currentScreenshot, setCurrentScreenshot] = useState(0);
+
+  useEffect(() => {
+    if (slug) {
+      const localData = dataManager.getLocalData();
+      const foundWebsite = localData.websites.find(w => w.slug === slug || w.id === slug);
+      if (foundWebsite) {
+        setWebsite(foundWebsite);
+      } else {
+        navigate('/');
+      }
+    }
+  }, [slug, navigate]);
+
+  if (!website) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleVisitWebsite = () => {
     window.open(website.url, '_blank');
     // 这里可以增加访问统计的逻辑
+  };
+
+  const handleEdit = () => {
+    navigate(`/edit/${website.slug || website.id}`);
+  };
+
+  const handleShare = () => {
+    // 创建单个网站的分享数据
+    const localData = dataManager.getLocalData();
+    const shareData = {
+      websites: [website],
+      tags: localData.tags.filter(tag => website.tags.includes(tag.name)),
+      shareId: dataManager.generateShareId(),
+      createdAt: new Date().toISOString()
+    };
+    
+    // 生成分享链接
+    const shareUrl = dataManager.createShareLink(localData, `分享网站：${website.title}`, 7);
+    
+    // 复制到剪贴板
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('分享链接已复制到剪贴板！');
+    });
   };
 
   const renderStars = (rating: number) => {
@@ -61,20 +103,21 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead website={website} />
       {/* 导航栏 */}
       <div className="border-b bg-card">
         <div className="max-w-6xl mx-auto p-6">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={onBack} className="gap-2">
+            <Button variant="ghost" onClick={() => navigate('/')} className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               返回
             </Button>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => onShare(website)} className="gap-2">
+              <Button variant="outline" onClick={handleShare} className="gap-2">
                 <Share2 className="w-4 h-4" />
                 分享
               </Button>
-              <Button variant="outline" onClick={() => onEdit(website)} className="gap-2">
+              <Button variant="outline" onClick={handleEdit} className="gap-2">
                 <Edit className="w-4 h-4" />
                 编辑
               </Button>
@@ -85,7 +128,7 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
             </div>
           </div>
         </div>
-      </div>
+        </div>
 
       <div className="max-w-6xl mx-auto p-6">
         {/* 头部信息 */}
@@ -118,15 +161,15 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                             {website.language}
                           </span>
                         )}
-                      </div>
-                    </div>
+                </div>
+              </div>
                     <div className="text-right">
-                      {website.featured && (
+                {website.featured && (
                         <Badge className="mb-2 gap-1">
                           <Star className="w-3 h-3 fill-current" />
                           精选推荐
-                        </Badge>
-                      )}
+                  </Badge>
+                )}
                       {website.rating && (
                         <div className="flex items-center gap-2 mb-2">
                           <div className="flex gap-0.5">
@@ -137,14 +180,14 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                       )}
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Eye className="w-4 h-4" />
-                        {website.clicks.toLocaleString()} 次访问
+                        {(website.clicks || 0).toLocaleString()} 次访问
                       </div>
                     </div>
                   </div>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
                     <Badge variant="secondary">{website.category}</Badge>
-                    {website.isPaid && (
+                {website.isPaid && (
                       <Badge variant="outline" className="gap-1">
                         <CreditCard className="w-3 h-3" />
                         付费服务
@@ -158,18 +201,18 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                     {website.tags.length > 5 && (
                       <Badge variant="outline">
                         +{website.tags.length - 5} 更多
-                      </Badge>
-                    )}
-                  </div>
-                </div>
+                  </Badge>
+                )}
+              </div>
+            </div>
               </div>
             </div>
           </Card>
         </div>
 
         {/* 详细信息标签页 */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="gap-2">
               <Zap className="w-4 h-4" />
               概览
@@ -185,10 +228,6 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
             <TabsTrigger value="stats" className="gap-2">
               <BarChart3 className="w-4 h-4" />
               统计信息
-            </TabsTrigger>
-            <TabsTrigger value="ai-enrichment" className="gap-2">
-              <Bot className="w-4 h-4" />
-              AI丰富
             </TabsTrigger>
           </TabsList>
 
@@ -226,41 +265,41 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                                   className="w-full h-full object-cover"
                                 />
                               </button>
-                            ))}
-                          </div>
+              ))}
+            </div>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+          </CardContent>
+        </Card>
                 )}
 
                 <Card>
-                  <CardHeader>
-                    <CardTitle>详细介绍</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
+            <CardHeader>
+              <CardTitle>详细介绍</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground leading-relaxed">
                       {website.fullDescription || website.description}
-                    </p>
-                  </CardContent>
-                </Card>
+              </p>
+            </CardContent>
+          </Card>
 
                 {/* 相关网站推荐 */}
                 {website.relatedSites && website.relatedSites.length > 0 && (
                   <Card>
-                    <CardHeader>
+            <CardHeader>
                       <CardTitle>相关推荐</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+            </CardHeader>
+            <CardContent>
                       <p className="text-muted-foreground text-sm mb-4">
                         基于标签和分类为您推荐的相似网站
                       </p>
                       <div className="text-sm text-muted-foreground">
                         推荐功能即将上线...
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+            </CardContent>
+          </Card>
+        )}
               </div>
 
               {/* 侧边栏信息 */}
@@ -279,7 +318,7 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">访问次数</span>
-                      <span>{website.clicks.toLocaleString()}</span>
+                      <span>{(website.clicks || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">收费模式</span>
@@ -312,32 +351,32 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                 </Card>
 
                 <Card>
-                  <CardHeader>
+            <CardHeader>
                     <CardTitle>标签云</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+            </CardHeader>
+            <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {website.tags.map((tag, index) => (
                         <Badge key={`${tag}-${index}`} variant="secondary" className="text-xs">
                           {tag}
                         </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="features" className="space-y-6">
             <Card>
-              <CardHeader>
+            <CardHeader>
                 <CardTitle>主要功能特性</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   了解这个网站提供的核心功能和服务
                 </p>
-              </CardHeader>
-              <CardContent>
+            </CardHeader>
+            <CardContent>
                 {website.features && website.features.length > 0 ? (
                   <div className="grid gap-3">
                     {website.features.map((feature, index) => (
@@ -387,7 +426,7 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                             </div>
                             <span className="text-sm text-muted-foreground">
                               {new Date(review.date).toLocaleDateString('zh-CN')}
-                            </span>
+                    </span>
                           </div>
                           <p className="text-muted-foreground">{review.content}</p>
                           <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
@@ -422,20 +461,20 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                       <Eye className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl">{website.clicks.toLocaleString()}</div>
+                      <div className="text-2xl">{(website.clicks || 0).toLocaleString()}</div>
                       <div className="text-sm text-muted-foreground">总访问量</div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card>
+        <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
                       <Star className="w-6 h-6 text-green-600" />
                     </div>
-                    <div>
+              <div>
                       <div className="text-2xl">{website.rating || 'N/A'}</div>
                       <div className="text-sm text-muted-foreground">用户评分</div>
                     </div>
@@ -448,8 +487,8 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
                       <MessageSquare className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
+              </div>
+              <div>
                       <div className="text-2xl">{website.reviews?.length || 0}</div>
                       <div className="text-sm text-muted-foreground">用户评价</div>
                     </div>
@@ -462,14 +501,14 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-900">
                       <Calendar className="w-6 h-6 text-orange-600" />
-                    </div>
-                    <div>
+              </div>
+                <div>
                       <div className="text-2xl">
                         {Math.floor((Date.now() - new Date(website.addedDate).getTime()) / (1000 * 60 * 60 * 24))}
-                      </div>
+                </div>
                       <div className="text-sm text-muted-foreground">收录天数</div>
-                    </div>
-                  </div>
+              </div>
+                </div>
                 </CardContent>
               </Card>
             </div>
@@ -481,30 +520,15 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
               <CardContent>
                 <div className="h-64 flex items-center justify-center text-muted-foreground">
                   访问趋势图表功能即将上线...
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="ai-enrichment" className="space-y-6">
-            <AIEnrichment
-              website={website}
-              onUpdateWebsite={(updates) => {
-                // 这里需要实现更新网站的逻辑
-                console.log('更新网站信息:', updates);
-                // TODO: 调用父组件的更新函数
-              }}
-              aiConfig={{
-                apiEndpoint: 'https://api.openai.com/v1/chat/completions',
-                apiKey: '',
-                model: 'gpt-3.5-turbo',
-                maxTokens: 2000,
-                temperature: 0.7
-              }}
-            />
+            </div>
+          </CardContent>
+        </Card>
           </TabsContent>
         </Tabs>
       </div>
     </div>
   );
 }
+
+
+

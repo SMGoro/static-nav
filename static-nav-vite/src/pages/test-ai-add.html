@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI添加网站功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        .test-description {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .test-steps {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-steps li {
+            margin: 8px 0;
+        }
+        .expected-result {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .expected-result h4 {
+            margin: 0 0 10px 0;
+            color: #065f46;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .note {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .note h4 {
+            margin: 0 0 10px 0;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 AI添加网站功能测试指南</h1>
+    <p>本页面提供了测试新增AI功能的详细步骤和预期结果。</p>
+
+    <div class="test-section">
+        <div class="test-title">1. 手动添加网站测试</div>
+        <div class="test-description">
+            测试传统的网站添加功能，确保基本功能正常工作。
+        </div>
+        <div class="test-steps">
+            <ol>
+                <li>进入网站添加页面</li>
+                <li>选择"手动添加"标签页</li>
+                <li>填写网站名称、URL、描述等信息</li>
+                <li>选择分类和添加标签</li>
+                <li>点击"添加网站"按钮</li>
+            </ol>
+        </div>
+        <div class="expected-result">
+            <h4>预期结果：</h4>
+            <ul>
+                <li>网站成功添加到导航站</li>
+                <li>可以在网站列表中看到新添加的网站</li>
+                <li>网站信息完整且正确</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">2. URL自动获取功能测试</div>
+        <div class="test-description">
+            测试通过URL自动获取网站信息的功能。
+        </div>
+        <div class="test-steps">
+            <ol>
+                <li>进入网站添加页面</li>
+                <li>选择"URL自动获取"标签页</li>
+                <li>输入一个网站URL（如：https://github.com）</li>
+                <li>点击"自动获取"按钮</li>
+                <li>等待AI分析完成</li>
+                <li>查看自动填充的网站信息</li>
+                <li>点击"确认添加"按钮</li>
+            </ol>
+        </div>
+        <div class="expected-result">
+            <h4>预期结果：</h4>
+            <ul>
+                <li>网站标题自动填充</li>
+                <li>网站描述自动生成</li>
+                <li>分类自动识别</li>
+                <li>相关标签自动添加</li>
+                <li>网站图标自动匹配</li>
+                <li>网站成功添加到导航站</li>
+            </ul>
+        </div>
+        <div class="note">
+            <h4>测试URL建议：</h4>
+            <ul>
+                <li>https://github.com - 开发工具</li>
+                <li>https://figma.com - 设计工具</li>
+                <li>https://notion.so - 效率工具</li>
+                <li>https://openai.com - AI工具</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">3. AI聊天添加功能测试</div>
+        <div class="test-description">
+            测试通过自然语言描述需求，AI推荐网站的功能。
+        </div>
+        <div class="test-steps">
+            <ol>
+                <li>进入网站添加页面</li>
+                <li>选择"AI聊天添加"标签页</li>
+                <li>在文本框中描述您需要的网站类型</li>
+                <li>点击"开始AI聊天"按钮</li>
+                <li>等待AI分析并推荐网站</li>
+                <li>查看AI推荐的网站信息</li>
+                <li>点击"确认添加"按钮</li>
+            </ol>
+        </div>
+        <div class="expected-result">
+            <h4>预期结果：</h4>
+            <ul>
+                <li>AI根据描述推荐相关网站</li>
+                <li>网站信息自动填充</li>
+                <li>分类和标签符合描述需求</li>
+                <li>推荐理由清晰明确</li>
+                <li>网站成功添加到导航站</li>
+            </ul>
+        </div>
+        <div class="note">
+            <h4>测试描述建议：</h4>
+            <ul>
+                <li>"我需要一些设计灵感网站"</li>
+                <li>"推荐一些优秀的编程学习资源"</li>
+                <li>"找一些AI工具和平台"</li>
+                <li>"需要效率工具和项目管理软件"</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">4. AI配置功能测试</div>
+        <div class="test-description">
+            测试AI配置功能，确保可以正确设置API参数。
+        </div>
+        <div class="test-steps">
+            <ol>
+                <li>在AI聊天添加页面点击"AI配置"按钮</li>
+                <li>输入OpenAI API密钥</li>
+                <li>选择模型（如：gpt-3.5-turbo）</li>
+                <li>调整温度和最大token数</li>
+                <li>点击"保存配置"</li>
+                <li>测试AI功能是否正常工作</li>
+            </ol>
+        </div>
+        <div class="expected-result">
+            <h4>预期结果：</h4>
+            <ul>
+                <li>配置信息正确保存</li>
+                <li>AI功能正常工作</li>
+                <li>推荐结果质量良好</li>
+                <li>配置信息持久化存储</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">5. 错误处理测试</div>
+        <div class="test-description">
+            测试各种错误情况下的处理机制。
+        </div>
+        <div class="test-steps">
+            <ol>
+                <li>测试无效URL的处理</li>
+                <li>测试网络连接失败的情况</li>
+                <li>测试AI API调用失败的情况</li>
+                <li>测试空输入的处理</li>
+                <li>测试重复网站的处理</li>
+            </ol>
+        </div>
+        <div class="expected-result">
+            <h4>预期结果：</h4>
+            <ul>
+                <li>显示友好的错误提示</li>
+                <li>不会导致应用崩溃</li>
+                <li>提供重试选项</li>
+                <li>错误信息清晰明确</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">6. 性能测试</div>
+        <div class="test-description">
+            测试功能的响应速度和性能表现。
+        </div>
+        <div class="test-steps">
+            <ol>
+                <li>测试URL自动获取的响应时间</li>
+                <li>测试AI聊天的响应时间</li>
+                <li>测试大量数据时的性能</li>
+                <li>测试并发请求的处理</li>
+            </ol>
+        </div>
+        <div class="expected-result">
+            <h4>预期结果：</h4>
+            <ul>
+                <li>URL获取在5秒内完成</li>
+                <li>AI聊天在10秒内完成</li>
+                <li>界面响应流畅</li>
+                <li>无内存泄漏</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="note">
+        <h4>注意事项：</h4>
+        <ul>
+            <li>确保网络连接稳定</li>
+            <li>需要有效的AI API密钥</li>
+            <li>某些网站可能有访问限制</li>
+            <li>AI推荐结果可能因模型而异</li>
+        </ul>
+    </div>
+
+    <div class="code-block">
+// 测试完成后，可以检查以下功能：
+// 1. 网站信息是否正确获取
+// 2. AI推荐是否准确
+// 3. 错误处理是否完善
+// 4. 用户体验是否良好
+// 5. 性能是否满足要求
+    </div>
+</body>
+</html>
+

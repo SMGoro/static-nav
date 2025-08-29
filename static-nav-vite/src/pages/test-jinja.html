@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jinja模板功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        .test-description {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .jinja-template {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .feature-list {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .feature-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 8px 0;
+        }
+        .code-example {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .code-example h4 {
+            margin: 0 0 10px 0;
+            color: #374151;
+        }
+        .expected-result {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .expected-result h4 {
+            margin: 0 0 10px 0;
+            color: #065f46;
+        }
+        .note {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .note h4 {
+            margin: 0 0 10px 0;
+            color: #92400e;
+        }
+        .test-urls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .test-url {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .test-url h5 {
+            margin: 0 0 8px 0;
+            color: #374151;
+        }
+        .test-url p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Jinja模板功能测试指南</h1>
+    <p>本页面提供了测试新增Jinja模板功能的详细说明和示例。</p>
+
+    <div class="test-section">
+        <div class="test-title">1. Jinja模板功能概述</div>
+        <div class="test-description">
+            Jinja模板功能是对URL自动获取功能的增强，使用jinja模板语法来智能解析网站信息。
+        </div>
+        <div class="feature-list">
+            <h4>主要功能特性：</h4>
+            <ul>
+                <li><strong>Jinja模板解析</strong>：使用jinja模板语法分析网站内容</li>
+                <li><strong>技术栈检测</strong>：自动识别网站使用的技术栈</li>
+                <li><strong>社交媒体提取</strong>：提取Twitter、Facebook、LinkedIn等社交媒体信息</li>
+                <li><strong>联系信息识别</strong>：自动识别邮箱、电话、地址等联系信息</li>
+                <li><strong>智能分类</strong>：基于网站内容智能分类</li>
+                <li><strong>标签推荐</strong>：根据网站特性推荐相关标签</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">2. Jinja模板语法示例</div>
+        <div class="test-description">
+            以下是Jinja模板的核心语法示例，用于智能解析不同类型的网站。
+        </div>
+        
+        <div class="jinja-template">
+{% if 'github' in url %}
+网站类型：开发工具
+分类：开发工具
+标签：['Git', '代码托管', '开源', '协作']
+特性：['版本控制', '代码审查', '项目管理', 'CI/CD']
+{% elif 'figma' in url %}
+网站类型：设计工具
+分类：设计资源
+标签：['设计', 'UI/UX', '原型设计', '协作']
+特性：['实时协作', '原型设计', '设计系统', '插件生态']
+{% elif 'notion' in url %}
+网站类型：效率工具
+分类：效率工具
+标签：['笔记', '项目管理', '知识管理', '协作']
+特性：['块级编辑', '数据库', '模板库', '多平台同步']
+{% else %}
+网站类型：{{ category | default('其他') }}
+分类：{{ category | default('其他') }}
+标签：{{ tags | default(['网站']) }}
+特性：{{ features | default([]) }}
+{% endif %}
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">3. 技术栈检测功能</div>
+        <div class="test-description">
+            自动检测网站使用的技术栈，支持多种主流技术。
+        </div>
+        
+        <div class="code-example">
+            <h4>支持的技术栈：</h4>
+            <ul>
+                <li><strong>前端框架</strong>：React, Vue.js, Angular</li>
+                <li><strong>后端语言</strong>：Node.js, Python, Ruby, PHP</li>
+                <li><strong>框架</strong>：Django, Flask, Rails, WordPress</li>
+                <li><strong>云服务</strong>：AWS, Google Cloud, Azure</li>
+                <li><strong>容器化</strong>：Docker, Kubernetes</li>
+                <li><strong>数据库</strong>：MySQL, PostgreSQL, MongoDB, Redis</li>
+                <li><strong>服务器</strong>：Nginx, Apache</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">4. 社交媒体信息提取</div>
+        <div class="test-description">
+            自动提取网站的社交媒体信息。
+        </div>
+        
+        <div class="code-example">
+            <h4>支持的社交媒体平台：</h4>
+            <ul>
+                <li><strong>Twitter</strong>：提取twitter:site元数据</li>
+                <li><strong>Facebook</strong>：提取fb:app_id元数据</li>
+                <li><strong>LinkedIn</strong>：提取linkedin:company元数据</li>
+                <li><strong>Instagram</strong>：提取instagram:site元数据</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">5. 联系信息识别</div>
+        <div class="test-description">
+            智能识别网站中的联系信息。
+        </div>
+        
+        <div class="code-example">
+            <h4>识别类型：</h4>
+            <ul>
+                <li><strong>邮箱地址</strong>：使用正则表达式匹配邮箱格式</li>
+                <li><strong>电话号码</strong>：识别各种格式的电话号码</li>
+                <li><strong>地址信息</strong>：从HTML中提取地址相关元素</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">6. 测试URL建议</div>
+        <div class="test-description">
+            以下是一些可以用来测试Jinja模板功能的网站URL。
+        </div>
+        
+        <div class="test-urls">
+            <div class="test-url">
+                <h5>开发工具类</h5>
+                <p><strong>GitHub</strong>：https://github.com</p>
+                <p><strong>Stack Overflow</strong>：https://stackoverflow.com</p>
+                <p><strong>CodePen</strong>：https://codepen.io</p>
+            </div>
+            <div class="test-url">
+                <h5>设计工具类</h5>
+                <p><strong>Figma</strong>：https://figma.com</p>
+                <p><strong>Behance</strong>：https://behance.net</p>
+                <p><strong>Dribbble</strong>：https://dribbble.com</p>
+            </div>
+            <div class="test-url">
+                <h5>效率工具类</h5>
+                <p><strong>Notion</strong>：https://notion.so</p>
+                <p><strong>Slack</strong>：https://slack.com</p>
+                <p><strong>Trello</strong>：https://trello.com</p>
+            </div>
+            <div class="test-url">
+                <h5>内容平台类</h5>
+                <p><strong>Medium</strong>：https://medium.com</p>
+                <p><strong>Dev.to</strong>：https://dev.to</p>
+                <p><strong>Hashnode</strong>：https://hashnode.dev</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">7. 测试步骤</div>
+        <div class="test-description">
+            按照以下步骤测试Jinja模板功能。
+        </div>
+        
+        <div class="feature-list">
+            <ol>
+                <li>进入网站添加页面</li>
+                <li>选择"URL自动获取"标签页</li>
+                <li>输入上述测试URL中的一个</li>
+                <li>点击"自动获取"按钮</li>
+                <li>等待jinja模板解析完成</li>
+                <li>查看自动填充的网站信息</li>
+                <li>检查浏览器控制台的详细解析结果</li>
+                <li>验证技术栈、社交媒体、联系信息等是否正确提取</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">8. 预期结果</div>
+        <div class="test-description">
+            测试成功后应该看到以下结果。
+        </div>
+        
+        <div class="expected-result">
+            <h4>成功指标：</h4>
+            <ul>
+                <li>网站标题和描述正确提取</li>
+                <li>分类和标签符合网站类型</li>
+                <li>技术栈正确识别（如果适用）</li>
+                <li>社交媒体信息正确提取</li>
+                <li>联系信息正确识别</li>
+                <li>控制台显示详细的解析日志</li>
+                <li>网站图标正确匹配</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">9. 调试信息</div>
+        <div class="test-description">
+            在浏览器控制台中查看详细的解析信息。
+        </div>
+        
+        <div class="code-example">
+            <h4>控制台输出示例：</h4>
+            <pre>
+检测到的技术栈: ['React', 'Node.js', 'MongoDB']
+社交媒体信息: {twitter: '@example', facebook: '123456789'}
+联系信息: {email: 'contact@example.com', phone: '+1-234-567-8900'}
+            </pre>
+        </div>
+    </div>
+
+    <div class="note">
+        <h4>注意事项：</h4>
+        <ul>
+            <li>确保网络连接稳定</li>
+            <li>某些网站可能有访问限制</li>
+            <li>技术栈检测基于HTML内容分析</li>
+            <li>社交媒体信息需要网站提供相应的元数据</li>
+            <li>联系信息识别可能不是100%准确</li>
+            <li>Jinja模板解析结果可能因网站结构而异</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">10. 故障排除</div>
+        <div class="test-description">
+            如果遇到问题，请检查以下项目。
+        </div>
+        
+        <div class="feature-list">
+            <h4>常见问题：</h4>
+            <ul>
+                <li><strong>无法获取网站内容</strong>：检查网络连接和URL是否正确</li>
+                <li><strong>解析结果不准确</strong>：某些网站结构可能不支持自动解析</li>
+                <li><strong>技术栈未检测到</strong>：网站可能使用了自定义技术或隐藏了技术信息</li>
+                <li><strong>社交媒体信息缺失</strong>：网站可能没有提供相应的元数据</li>
+                <li><strong>联系信息识别失败</strong>：信息可能以非标准格式存在</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="jinja-template">
+// 测试完成后，可以检查以下功能：
+// 1. Jinja模板是否正确解析网站内容
+// 2. 技术栈检测是否准确
+// 3. 社交媒体信息是否正确提取
+// 4. 联系信息是否正确识别
+// 5. 分类和标签是否符合预期
+// 6. 整体解析性能是否良好
+    </div>
+</body>
+</html>
+

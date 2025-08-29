@@ -17,7 +17,8 @@ import {
   SortDesc,
   X,
   Settings,
-  Tag as TagIcon
+  Tag as TagIcon,
+  Share
 } from 'lucide-react';
 import {
   Select,
@@ -49,6 +50,7 @@ interface NavigationProps {
   onDeleteWebsite: (id: string) => void;
   onViewWebsite: (website: Website) => void;
   onShareWebsite: (website: Website) => void;
+  onCreateShare?: () => void;
   onAdvancedFilter?: () => void;
 }
 
@@ -59,6 +61,7 @@ export function Navigation({
   onDeleteWebsite,
   onViewWebsite,
   onShareWebsite,
+  onCreateShare,
   onAdvancedFilter
 }: NavigationProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,7 +102,7 @@ export function Navigation({
   };
 
   const filteredWebsites = useMemo(() => {
-    let filtered = websites.filter(website => {
+    const filtered = websites.filter(website => {
       const matchesSearch = website.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            website.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            website.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -136,19 +139,25 @@ export function Navigation({
       {/* 页面标题和操作按钮 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl">网站导航</h1>
+          <h2 className="text-xl">网站导航</h2>
           <p className="text-muted-foreground mt-1">
             发现优质网站资源，提升工作效率
           </p>
         </div>
         <div className="flex gap-2">
+          {onCreateShare && (
+            <Button variant="outline" onClick={onCreateShare} className="gap-2">
+              <Share className="w-4 h-4" />
+              创建分享
+            </Button>
+          )}
           {onAdvancedFilter && (
             <Button variant="outline" onClick={onAdvancedFilter} className="gap-2">
               <Settings className="w-4 h-4" />
               高级筛选
             </Button>
           )}
-          <Button onClick={onAddWebsite} className="gap-2 shadow-lg">
+          <Button variant="outline" onClick={onAddWebsite} className="gap-2 shadow-lg">
             <Plus className="w-4 h-4" />
             添加网站
           </Button>

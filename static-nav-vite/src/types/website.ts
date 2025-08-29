@@ -20,6 +20,8 @@ export interface Website {
   language?: string;
   isPaid?: boolean;
   authoredBy?: string;
+  isBuiltIn?: boolean; // 是否为自带数据
+  slug?: string; // SEO友好的URL
 }
 
 export interface Tag {

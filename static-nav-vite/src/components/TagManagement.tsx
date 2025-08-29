@@ -663,7 +663,10 @@ export function TagManagement({ websites }: TagManagementProps) {
                           size="sm"
                           onClick={() => {
                             setEditingRelation(relation);
-                            setRelationForm(relation);
+                            setRelationForm({
+                              ...relation,
+                              description: relation.description || ''
+                            });
                           }}
                         >
                           <Edit className="w-4 h-4" />
