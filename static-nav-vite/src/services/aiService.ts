@@ -221,7 +221,9 @@ export class AIService {
         if (match) {
           const websitesStr = match[1];
           const websites = this.parseWebsitesFromString(websitesStr);
+          console.log('解析到的网站数量:', websites.length);
           websites.forEach((website, index) => {
+            console.log(`发送网站 ${index + 1}:`, website.title);
             onChunk({ type: 'website', data: website, index });
           });
         }
@@ -240,15 +242,33 @@ export class AIService {
           onChunk({ type: 'confidence', data: { confidence: parseFloat(match[1]) } });
         }
       }
-    } catch {
+    } catch (error) {
+      console.error('流式JSON解析错误:', error);
       // 忽略解析错误，继续处理
     }
   }
 
   private parseWebsitesFromString(websitesStr: string): AIWebsiteRecommendation[] {
     try {
-      // 简单的JSON解析，处理流式数据
+      // 改进的JSON解析，处理流式数据
       const websites: AIWebsiteRecommendation[] = [];
+      
+      // 尝试解析完整的网站数组
+      try {
+        const parsed = JSON.parse(`[${websitesStr}]`);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(website => {
+            if (website.title && website.url) {
+              websites.push(this.validateWebsite(website));
+            }
+          });
+          return websites;
+        }
+      } catch {
+        // 如果完整解析失败，尝试逐个解析
+      }
+      
+      // 逐个解析网站对象
       const websiteMatches = websitesStr.match(/\{[^}]*\}/g);
       
       if (websiteMatches) {
@@ -266,6 +286,7 @@ export class AIService {
       
       return websites;
     } catch (error) {
+      console.error('解析网站字符串失败:', error);
       return [];
     }
   }

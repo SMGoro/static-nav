@@ -247,28 +247,55 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
       console.log('=== 开始批量添加网站 ===');
       console.log('批量添加网站数量:', websites.length);
       
+      // 获取当前数据
+      const existingData = dataManager.getLocalData();
+      const newWebsites: Website[] = [];
+      
       websites.forEach((website, index) => {
-        console.log(`=== 添加第${index + 1}个网站 ===`);
+        console.log(`=== 处理第${index + 1}个网站 ===`);
         console.log('网站信息:', website);
         
         // 检查是否已存在相同URL或标题的网站
-        const existingData = dataManager.getLocalData();
         const existingWebsite = existingData.websites.find((w: Website) => 
           w.url === website.url || w.title === website.title
         );
         
         if (existingWebsite) {
           console.warn(`第${index + 1}个网站发现重复:`, existingWebsite);
+        } else {
+          // 创建新网站对象
+          const newWebsite: Website = {
+            ...website,
+            id: dataManager.generateShareId(),
+            slug: website.slug || dataManager.generateSlug(website.title)
+          };
+          newWebsites.push(newWebsite);
+          console.log(`第${index + 1}个网站准备添加:`, newWebsite.title);
         }
-        
-        onAddWebsite(website);
-        console.log(`第${index + 1}个网站添加完成:`, website.title);
       });
       
-      console.log('=== 批量添加网站完成 ===');
-      
-      // 显示批量添加成功提示
-      alert(`成功添加${websites.length}个网站！`);
+      if (newWebsites.length > 0) {
+        // 批量添加到数据中
+        const updatedData = {
+          ...existingData,
+          websites: [...existingData.websites, ...newWebsites],
+          lastUpdated: new Date().toISOString()
+        };
+        
+        // 保存数据
+        dataManager.saveLocalData(updatedData);
+        
+        console.log('=== 批量添加网站完成 ===');
+        console.log(`成功添加 ${newWebsites.length} 个网站`);
+        
+        // 显示批量添加成功提示
+        alert(`成功添加${newWebsites.length}个网站！`);
+        
+        // 刷新页面数据（如果需要）
+        window.location.reload();
+      } else {
+        alert('没有新的网站可以添加，所有网站都已存在');
+      }
     } catch (error) {
       console.error('批量添加网站失败:', error);
       alert('批量添加网站失败，请重试');

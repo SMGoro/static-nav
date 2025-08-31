@@ -203,6 +203,7 @@ export class WebsiteInfoService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private extractWebsiteIcon(favicon: string, url: string, _title: string): string {
     if (favicon) return '🌐';
     

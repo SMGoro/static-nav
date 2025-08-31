@@ -79,6 +79,19 @@ function AppContent() {
         // 如果没有数据，加载默认的mock数据
         const defaultData = dataManager.getDefaultData();
         saveData(defaultData);
+      } else {
+        // 为现有网站添加slug（迁移）
+        const needsMigration = localData.websites.some(website => !website.slug);
+        if (needsMigration) {
+          const migratedData = {
+            ...localData,
+            websites: localData.websites.map(website => ({
+              ...website,
+              slug: website.slug || dataManager.generateSlug(website.title)
+            }))
+          };
+          saveData(migratedData);
+        }
       }
     }
   }, []); // 只在组件挂载时执行一次
@@ -114,7 +127,8 @@ function AppContent() {
       // 添加新网站
       const newWebsite: Website = {
         ...websiteData,
-        id: dataManager.generateShareId() // 使用更可靠的ID生成方法
+        id: dataManager.generateShareId(), // 使用更可靠的ID生成方法
+        slug: websiteData.slug || dataManager.generateSlug(websiteData.title) // 自动生成slug
       };
       newAppData.websites = [...newAppData.websites, newWebsite];
     }

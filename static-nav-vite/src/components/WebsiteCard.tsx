@@ -28,11 +28,10 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-primary/10 cursor-pointer">
-      <div>
-        {/* 如果有slug，使用路由链接 */}
-        {website.slug ? (
-          <Link to={`/website/${website.slug}`} className="block">
-            <div className="p-6">
+      {/* 如果有slug，使用路由链接 */}
+      {website.slug ? (
+        <Link to={`/website/${website.slug}`} className="block">
+          <div className="p-6">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 flex-1">
@@ -128,7 +127,7 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Eye className="w-3 h-3" />
-                    <span>{website.clicks.toLocaleString()}</span>
+                    <span>{(website.clicks || 0).toLocaleString()}</span>
                   </div>
                   <Button
                     size="sm"
@@ -271,7 +270,6 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
         </CardContent>
       </div>
         )}
-      </div>
     </Card>
   );
 }

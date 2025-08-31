@@ -137,7 +137,7 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                       )}
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Eye className="w-4 h-4" />
-                        {website.clicks.toLocaleString()} 次访问
+                        {(website.clicks || 0).toLocaleString()} 次访问
                       </div>
                     </div>
                   </div>
@@ -279,7 +279,7 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">访问次数</span>
-                      <span>{website.clicks.toLocaleString()}</span>
+                      <span>{(website.clicks || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">收费模式</span>
@@ -422,7 +422,7 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                       <Eye className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl">{website.clicks.toLocaleString()}</div>
+                      <div className="text-2xl">{(website.clicks || 0).toLocaleString()}</div>
                       <div className="text-sm text-muted-foreground">总访问量</div>
                     </div>
                   </div>

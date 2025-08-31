@@ -441,7 +441,7 @@ class DataManager {
   }
 
   // 生成SEO友好的slug
-  private generateSlug(title: string): string {
+  generateSlug(title: string): string {
     return title
       .toLowerCase()
       .replace(/[^\w\s-]/g, '') // 移除特殊字符
