@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Checkbox } from './ui/checkbox';
 import { Card, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { IconMd, IconLg } from './ui/icon';
 import { 
   Plus, 
   CheckCircle, 
@@ -235,18 +236,19 @@ export function BatchAddDialog({ isOpen, onClose, websites, onAddWebsites }: Bat
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
-                              <span className="text-2xl">{website.icon}</span>
+                              <IconLg 
+                                icon={website.icon} 
+                              />
                               <div>
                                 <h4 className="font-medium">{website.title}</h4>
                                 <p className="text-sm text-muted-foreground">{website.description}</p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className="text-xs">{website.category}</Badge>
-                              {website.isPaid && (
-                                <Badge variant="outline" className="text-xs">付费</Badge>
-                              )}
-                            </div>
+                                                          <div className="flex items-center gap-2">
+                                {website.isPaid && (
+                                  <Badge variant="outline" className="text-xs">付费</Badge>
+                                )}
+                              </div>
                           </div>
                           
                           <div className="mt-3 flex items-center gap-4">
@@ -307,7 +309,9 @@ export function BatchAddDialog({ isOpen, onClose, websites, onAddWebsites }: Bat
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
-                              <span className="text-2xl">{website.icon}</span>
+                              <IconLg 
+                                icon={website.icon} 
+                              />
                               <div>
                                 <h4 className="font-medium">{website.title}</h4>
                                 <p className="text-sm text-muted-foreground">{website.description}</p>
@@ -327,7 +331,9 @@ export function BatchAddDialog({ isOpen, onClose, websites, onAddWebsites }: Bat
                                 <span className="text-sm font-medium">已存在的网站：</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-lg">{existingWebsite.icon}</span>
+                                <IconMd 
+                                  icon={existingWebsite.icon} 
+                                />
                                 <div>
                                   <p className="text-sm font-medium">{existingWebsite.title}</p>
                                   <p className="text-xs text-muted-foreground">

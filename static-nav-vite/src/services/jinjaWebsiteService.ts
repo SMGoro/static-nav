@@ -488,7 +488,7 @@ Jinja分析结果：
       description: basicInfo.metaDescription || aiAnalysis.fullDescription || '',
       url: basicInfo.url || '',
       icon: basicInfo.icon || '🌐',
-      category: aiAnalysis.category || jinjaInfo.category || '其他',
+      category: '其他', // 移除分类功能，使用默认值
       tags: [...(aiAnalysis.tags || []), ...(jinjaInfo.tags || []), 'Jinja解析'],
       fullDescription: aiAnalysis.fullDescription || jinjaInfo.fullDescription || basicInfo.metaDescription || '',
       features: [...(aiAnalysis.features || []), ...(jinjaInfo.features || [])],
@@ -512,7 +512,7 @@ Jinja分析结果：
       url: websiteInfo.url,
       icon: websiteInfo.icon,
       tags: websiteInfo.tags,
-      category: websiteInfo.category,
+      category: '其他', // 移除分类功能，使用默认值
       addedDate: new Date().toISOString(),
       clicks: 0,
       featured: false,

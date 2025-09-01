@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { IconLg, IconMd } from './ui/icon';
 import { ExternalLink, Plus, CheckCircle } from 'lucide-react';
 import { AIWebsiteRecommendation } from '../services/aiService';
 
@@ -35,15 +36,15 @@ export function AIWebsiteCard({
   if (variant === 'compact') {
     return (
       <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border">
-        <span className="text-lg">{website.icon}</span>
+        <IconMd 
+          icon={website.icon} 
+        />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{website.title}</p>
           <p className="text-xs text-muted-foreground truncate">{website.description}</p>
         </div>
         <div className="flex items-center gap-1">
-          <Badge variant="outline" className="text-xs flex-shrink-0">
-            {website.category}
-          </Badge>
+          
           {showAddButton && (
             <Button
               variant="ghost"
@@ -65,7 +66,9 @@ export function AIWebsiteCard({
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3 flex-1">
-              <div className="text-2xl p-2 bg-muted/30 rounded-lg">{website.icon}</div>
+              <IconLg 
+                icon={website.icon} 
+              />
               <div className="flex-1">
                 <h3 className="font-medium text-card-foreground hover:text-primary transition-colors">
                   {website.title}
@@ -73,7 +76,6 @@ export function AIWebsiteCard({
                 <p className="text-sm text-muted-foreground mt-1 mb-3">{website.description}</p>
                 
                 <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary" className="text-xs">{website.category}</Badge>
                   {website.isPaid && (
                     <Badge variant="outline" className="text-xs">付费</Badge>
                   )}
@@ -132,7 +134,9 @@ export function AIWebsiteCard({
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3 flex-1">
-            <div className="text-2xl p-2 bg-muted/30 rounded-lg">{website.icon}</div>
+            <IconLg 
+              icon={website.icon} 
+            />
             <div className="flex-1">
               <h3 className="font-medium text-card-foreground hover:text-primary transition-colors">
                 {website.title}
@@ -140,7 +144,6 @@ export function AIWebsiteCard({
               <p className="text-sm text-muted-foreground mt-1 mb-3">{website.description}</p>
               
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="text-xs">{website.category}</Badge>
                 {website.isPaid && (
                   <Badge variant="outline" className="text-xs">付费</Badge>
                 )}

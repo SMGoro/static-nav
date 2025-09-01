@@ -2,6 +2,7 @@ import { Website } from '../types/website';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { IconLg } from './ui/icon';
 import { ExternalLink, Star, MoreHorizontal, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -35,7 +36,9 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="text-2xl p-2 bg-muted/30 rounded-lg">{website.icon}</div>
+                    <IconLg 
+                      icon={website.icon} 
+                    />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-card-foreground hover:text-primary transition-colors truncate">
                         {website.title}
@@ -147,7 +150,9 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3 flex-1">
-              <div className="text-2xl p-2 bg-muted/30 rounded-lg">{website.icon}</div>
+              <IconLg 
+                icon={website.icon} 
+              />
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-card-foreground hover:text-primary transition-colors truncate">
                   {website.title}
@@ -227,9 +232,7 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
           
           {/* 标签 */}
           <div className="flex flex-wrap gap-1 mb-4">
-            <Badge variant="secondary" className="text-xs">
-              {website.category}
-            </Badge>
+            
             {website.isPaid && (
               <Badge variant="outline" className="text-xs">
                 付费

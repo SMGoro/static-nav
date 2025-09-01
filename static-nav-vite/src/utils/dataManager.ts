@@ -158,7 +158,7 @@ class DataManager {
           description: website.description,
           url: website.url,
           icon: website.icon,
-          category: website.category,
+  
           featured: website.featured,
           rating: website.rating,
           tags: website.tags,

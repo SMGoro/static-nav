@@ -28,6 +28,7 @@ import {
   Zap
 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
+import { IconXl } from './ui/icon';
 
 export function WebsiteDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -136,8 +137,10 @@ export function WebsiteDetailPage() {
           <Card className="overflow-hidden">
             <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8">
               <div className="flex items-start gap-6">
-                <div className="text-6xl p-4 bg-background rounded-2xl shadow-lg">
-                  {website.icon}
+                <div className="p-4 bg-background rounded-2xl shadow-lg">
+                  <IconXl 
+                    icon={website.icon} 
+                  />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-4">
@@ -186,7 +189,7 @@ export function WebsiteDetailPage() {
                   </div>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="secondary">{website.category}</Badge>
+
                 {website.isPaid && (
                       <Badge variant="outline" className="gap-1">
                         <CreditCard className="w-3 h-3" />
@@ -313,8 +316,7 @@ export function WebsiteDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">分类</span>
-                      <Badge variant="outline">{website.category}</Badge>
+
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">访问次数</span>

@@ -2,7 +2,6 @@ import { Website } from '../types/website';
 
 export interface AIRecommendationRequest {
   query: string;
-  category?: string;
   maxResults: number;
 }
 
@@ -17,7 +16,6 @@ export interface AIWebsiteRecommendation {
   description: string;
   url: string;
   icon: string;
-  category: string;
   tags: string[];
   fullDescription?: string;
   features?: string[];
@@ -292,9 +290,8 @@ export class AIService {
   }
 
   private buildPrompt(request: AIRecommendationRequest): string {
-    const categoryFilter = request.category ? `，重点关注${request.category}类别的网站` : '';
     
-    return `请根据以下需求推荐${request.maxResults}个高质量的网站${categoryFilter}：
+    return `请根据以下需求推荐${request.maxResults}个高质量的网站：
 
 需求描述：${request.query}
 
@@ -307,7 +304,6 @@ export class AIService {
       "description": "简短描述",
       "url": "网站URL",
       "icon": "网站图标emoji",
-      "category": "网站分类",
       "tags": ["标签1", "标签2", "标签3"],
       "fullDescription": "详细描述",
       "features": ["特性1", "特性2"],
@@ -385,7 +381,6 @@ export class AIService {
               url: urlMatch?.[index]?.match(/"url":\s*"([^"]+)"/)?.[1] || 'https://example.com',
               description: descMatch?.[index]?.match(/"description":\s*"([^"]+)"/)?.[1] || '暂无描述',
               icon: '🌐',
-              category: '其他',
               tags: ['AI推荐'],
               fullDescription: '',
               features: [],
@@ -424,7 +419,6 @@ export class AIService {
       description: site.description || '',
       url: site.url || '',
       icon: site.icon || '🌐',
-      category: site.category || '其他',
       tags: tags,
       fullDescription: site.fullDescription || site.description || '',
       features: Array.isArray(site.features) ? site.features : [],
@@ -441,7 +435,6 @@ export class AIService {
       url: aiSite.url,
       icon: aiSite.icon,
       tags: aiSite.tags,
-      category: aiSite.category,
       addedDate: new Date().toISOString(),
       clicks: 0,
       featured: false,

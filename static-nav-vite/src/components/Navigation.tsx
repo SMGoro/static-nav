@@ -20,14 +20,8 @@ import {
   Tag as TagIcon,
   Share
 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
-import { categories, mockTags } from '../data/mockData';
+
+import { mockTags } from '../data/mockData';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,7 +59,7 @@ export function Navigation({
   onAdvancedFilter
 }: NavigationProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('全部');
+
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFeatured, setShowFeatured] = useState(false);
   const [sortBy, setSortBy] = useState<SortType>('default');
@@ -95,7 +89,6 @@ export function Navigation({
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCategory('全部');
     setSelectedTags([]);
     setShowFeatured(false);
     setSortBy('default');
@@ -107,7 +100,7 @@ export function Navigation({
                            website.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            website.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
       
-      const matchesCategory = selectedCategory === '全部' || website.category === selectedCategory;
+      const matchesCategory = true; // 移除分类筛选，始终匹配
       const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => website.tags.includes(tag));
       const matchesFeatured = !showFeatured || website.featured;
       
@@ -130,9 +123,9 @@ export function Navigation({
     }
 
     return filtered;
-  }, [websites, searchQuery, selectedCategory, selectedTags, showFeatured, sortBy]);
+  }, [websites, searchQuery, selectedTags, showFeatured, sortBy]);
 
-  const hasActiveFilters = searchQuery || selectedCategory !== '全部' || selectedTags.length > 0 || showFeatured;
+  const hasActiveFilters = searchQuery || selectedTags.length > 0 || showFeatured;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -180,18 +173,7 @@ export function Navigation({
                 />
               </div>
               
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -124,7 +124,7 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
         title: websiteInfo.title,
         description: websiteInfo.description,
         icon: websiteInfo.icon,
-        category: websiteInfo.category,
+        category: '其他', // 移除分类功能，使用默认值
         tags: [...websiteInfo.tags]
       }));
     } catch (error) {
@@ -161,7 +161,7 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
           description: website.description,
           url: website.url,
           icon: website.icon,
-          category: website.category,
+          category: '其他', // 移除分类功能，使用默认值
           featured: false,
           tags: website.tags
         });

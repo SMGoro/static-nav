@@ -5,7 +5,6 @@ export interface Website {
   url: string;
   icon: string;
   tags: string[];
-  category: string;
   addedDate: string;
   clicks: number;
   featured: boolean;

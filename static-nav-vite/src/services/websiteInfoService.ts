@@ -290,7 +290,7 @@ export class WebsiteInfoService {
       url: websiteInfo.url,
       icon: websiteInfo.icon,
       tags: websiteInfo.tags,
-      category: websiteInfo.category,
+      category: '其他', // 移除分类功能，使用默认值
       addedDate: new Date().toISOString(),
       clicks: 0,
       featured: false,

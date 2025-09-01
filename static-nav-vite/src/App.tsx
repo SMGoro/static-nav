@@ -21,6 +21,7 @@ import { Button } from './components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
 import { Bot, Home, Plus, Tag, Filter, Menu, X, Database, TestTube } from 'lucide-react';
 import { dataManager, AppData, ShareData, DuplicateCheckResult } from './utils/dataManager';
+import { toast, Toaster } from 'sonner';
 
 // 主应用内容组件
 function AppContent() {
@@ -79,19 +80,6 @@ function AppContent() {
         // 如果没有数据，加载默认的mock数据
         const defaultData = dataManager.getDefaultData();
         saveData(defaultData);
-      } else {
-        // 为现有网站添加slug（迁移）
-        const needsMigration = localData.websites.some(website => !website.slug);
-        if (needsMigration) {
-          const migratedData = {
-            ...localData,
-            websites: localData.websites.map(website => ({
-              ...website,
-              slug: website.slug || dataManager.generateSlug(website.title)
-            }))
-          };
-          saveData(migratedData);
-        }
       }
     }
   }, []); // 只在组件挂载时执行一次
@@ -114,40 +102,123 @@ function AppContent() {
   };
 
   const handleSaveWebsite = (websiteData: Omit<Website, 'id'>) => {
-    const newAppData = { ...appData };
-    
-    if (editingWebsite) {
-      // 编辑现有网站
-      newAppData.websites = newAppData.websites.map(site => 
-        site.id === editingWebsite.id 
-          ? { ...websiteData, id: editingWebsite.id }
-          : site
-      );
-    } else {
-      // 添加新网站
-      const newWebsite: Website = {
-        ...websiteData,
-        id: dataManager.generateShareId(), // 使用更可靠的ID生成方法
-        slug: websiteData.slug || dataManager.generateSlug(websiteData.title) // 自动生成slug
-      };
-      newAppData.websites = [...newAppData.websites, newWebsite];
+    try {
+      console.log('handleSaveWebsite 被调用');
+      console.log('当前路径:', location.pathname);
+      console.log('网站数据:', websiteData);
+      
+      const newAppData = { ...appData };
+      
+      // 根据当前路径判断是编辑还是新增
+      if (location.pathname.startsWith('/edit/')) {
+        console.log('编辑模式');
+        // 编辑现有网站
+        const websiteId = location.pathname.split('/edit/')[1];
+        console.log('要编辑的网站ID:', websiteId);
+        
+        const existingWebsite = newAppData.websites.find(site => 
+          site.id === websiteId || site.slug === websiteId
+        );
+        
+        console.log('找到的现有网站:', existingWebsite);
+        
+        if (existingWebsite) {
+          const updatedWebsite = { 
+            ...websiteData, 
+            id: existingWebsite.id,
+            slug: existingWebsite.slug, // 保持原有slug
+            addedDate: existingWebsite.addedDate, // 保持原有添加日期
+            clicks: existingWebsite.clicks, // 保持原有点击次数
+            isBuiltIn: existingWebsite.isBuiltIn // 保持原有内置状态
+          };
+          
+          console.log('更新后的网站数据:', updatedWebsite);
+          
+          newAppData.websites = newAppData.websites.map(site => 
+            site.id === existingWebsite.id 
+              ? updatedWebsite
+              : site
+          );
+          
+          console.log('更新后的网站列表:', newAppData.websites);
+          
+          // 显示编辑成功提示
+          toast.success('编辑网站成功！', {
+            description: `网站"${websiteData.title}"已更新成功。`,
+            duration: 3000,
+          });
+        } else {
+          throw new Error('未找到要编辑的网站');
+        }
+      } else {
+        console.log('新增模式');
+        // 添加新网站
+        const newWebsite: Website = {
+          ...websiteData,
+          id: dataManager.generateShareId(),
+          slug: websiteData.slug || dataManager.generateSlug(websiteData.title),
+          addedDate: new Date().toISOString().split('T')[0],
+          clicks: 0,
+          isBuiltIn: false
+        };
+        newAppData.websites = [...newAppData.websites, newWebsite];
+        
+        // 显示添加成功提示
+        toast.success('添加网站成功！', {
+          description: `网站"${websiteData.title}"已添加成功。`,
+          duration: 3000,
+        });
+      }
+      
+      console.log('保存数据');
+      saveData(newAppData);
+      
+      // 根据当前路径判断是否跳转到主页
+      if (location.pathname.startsWith('/edit/')) {
+        console.log('跳转到主页');
+        navigate('/');
+      }
+      setEditingWebsite(null);
+      
+    } catch (error) {
+      console.error('保存网站失败:', error);
+      
+      // 显示失败提示
+      const action = location.pathname.startsWith('/edit/') ? '编辑' : '添加';
+      toast.error(`${action}网站失败`, {
+        description: error instanceof Error ? error.message : '操作失败，请重试',
+        duration: 5000,
+      });
+      
+      // 重新抛出错误，让WebsiteForm组件也能捕获到
+      throw error;
     }
-    
-    saveData(newAppData);
-    
-    // 只有在编辑模式下才跳转到主页，AI推荐添加时不跳转
-    if (editingWebsite) {
-      navigate('/');
-    }
-    setEditingWebsite(null);
   };
 
   const handleDeleteWebsite = (id: string) => {
-    const newAppData = {
-      ...appData,
-      websites: appData.websites.filter(site => site.id !== id)
-    };
-    saveData(newAppData);
+    try {
+      const websiteToDelete = appData.websites.find(site => site.id === id);
+      const newAppData = {
+        ...appData,
+        websites: appData.websites.filter(site => site.id !== id)
+      };
+      saveData(newAppData);
+      
+      // 显示删除成功提示
+      if (websiteToDelete) {
+        toast.success('删除网站成功！', {
+          description: `网站"${websiteToDelete.title}"已删除。`,
+          duration: 3000,
+        });
+        console.log('删除网站成功:', websiteToDelete);
+      }
+    } catch (error) {
+      console.error('删除网站失败:', error);
+      toast.error('删除网站失败', {
+        description: error instanceof Error ? error.message : '删除失败，请重试',
+        duration: 5000,
+      });
+    }
   };
 
   const handleShareWebsite = (website: Website) => {
@@ -485,6 +556,12 @@ export default function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AppWithRouter />
+        <Toaster 
+          position="top-right"
+          richColors
+          closeButton
+          duration={4000}
+        />
       </ThemeProvider>
     </ErrorBoundary>
   );

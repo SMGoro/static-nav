@@ -6,6 +6,7 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Bot, Sparkles, Search, TrendingUp, Settings, Plus, CheckCircle, AlertCircle, History } from 'lucide-react';
+import { toast } from 'sonner';
 import { Website } from '../types/website';
 import { AIService, AIConfig, AIRecommendationRequest, AIRecommendationResponse, StreamChunk, AIWebsiteRecommendation } from '../services/aiService';
 import { AIConfigDialog } from './AIConfigDialog';
@@ -24,7 +25,7 @@ const CHAT_HISTORY_KEY = 'ai_chat_history';
 
 export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<string>('all');
+
   const [maxResults, setMaxResults] = useState<number>(5);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [recommendations, setRecommendations] = useState<AIRecommendationResponse | null>(null);
@@ -103,7 +104,6 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
       
       const request: AIRecommendationRequest = {
         query: query.trim(),
-        category: category === 'all' ? undefined : category,
         maxResults
       };
 
@@ -120,7 +120,6 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
         timestamp: new Date().toISOString(),
         query: query.trim(),
         response: result,
-        category: category === 'all' ? undefined : category,
         maxResults
       };
 
@@ -235,14 +234,20 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
       console.log('=== 添加网站完成 ===');
       
       // 显示成功提示
-      alert(`成功添加网站：${website.title}`);
+      toast.success('添加网站成功！', {
+        description: `网站"${website.title}"已添加成功。`,
+        duration: 3000,
+      });
     } catch (error) {
       console.error('添加网站失败:', error);
-      alert('添加网站失败，请重试');
+      toast.error('添加网站失败', {
+        description: error instanceof Error ? error.message : '添加失败，请重试',
+        duration: 5000,
+      });
     }
   };
 
-  const handleBatchAdd = (websites: Omit<Website, 'id'>[]) => {
+  const handleBatchAdd = (websites: AIWebsiteRecommendation[] | Omit<Website, 'id'>[]) => {
     try {
       console.log('=== 开始批量添加网站 ===');
       console.log('批量添加网站数量:', websites.length);
@@ -263,11 +268,15 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
         if (existingWebsite) {
           console.warn(`第${index + 1}个网站发现重复:`, existingWebsite);
         } else {
-          // 创建新网站对象
+          // 创建新网站对象，处理不同的类型
+          const isWebsiteType = 'addedDate' in website && 'clicks' in website && 'featured' in website;
           const newWebsite: Website = {
             ...website,
             id: dataManager.generateShareId(),
-            slug: website.slug || dataManager.generateSlug(website.title)
+            slug: isWebsiteType ? (website as Omit<Website, 'id'>).slug : dataManager.generateSlug(website.title),
+            addedDate: isWebsiteType ? (website as Omit<Website, 'id'>).addedDate : new Date().toISOString().split('T')[0],
+            clicks: isWebsiteType ? (website as Omit<Website, 'id'>).clicks : 0,
+            featured: isWebsiteType ? (website as Omit<Website, 'id'>).featured : false
           };
           newWebsites.push(newWebsite);
           console.log(`第${index + 1}个网站准备添加:`, newWebsite.title);
@@ -289,16 +298,25 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
         console.log(`成功添加 ${newWebsites.length} 个网站`);
         
         // 显示批量添加成功提示
-        alert(`成功添加${newWebsites.length}个网站！`);
+        toast.success('批量添加网站成功！', {
+          description: `成功添加${newWebsites.length}个网站。`,
+          duration: 3000,
+        });
         
         // 刷新页面数据（如果需要）
         window.location.reload();
       } else {
-        alert('没有新的网站可以添加，所有网站都已存在');
+        toast.info('没有新网站可添加', {
+          description: '所有网站都已存在，无需重复添加。',
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error('批量添加网站失败:', error);
-      alert('批量添加网站失败，请重试');
+      toast.error('批量添加网站失败', {
+        description: error instanceof Error ? error.message : '批量添加失败，请重试',
+        duration: 5000,
+      });
     }
   };
 
@@ -315,7 +333,6 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
 
   const handleRetryMessage = (message: ChatMessage) => {
     setQuery(message.query);
-    setCategory(message.category || 'all');
     setMaxResults(message.maxResults);
     handleAIRecommend();
   };
@@ -327,9 +344,15 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
     
     try {
       await navigator.clipboard.writeText(text);
-      alert('推荐结果已复制到剪贴板！');
+      toast.success('复制成功！', {
+        description: '推荐结果已复制到剪贴板。',
+        duration: 3000,
+      });
     } catch {
-      alert('复制失败，请手动复制');
+      toast.error('复制失败', {
+        description: '请手动复制推荐结果。',
+        duration: 5000,
+      });
     }
   };
 
@@ -370,10 +393,7 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
     }
   ];
 
-  const categories = [
-    '开发工具', '设计资源', '学习平台', '效率工具', 
-    'AI工具', '娱乐休闲', '新闻资讯', '其他'
-  ];
+
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -437,20 +457,7 @@ export function AIRecommendation({ onAddWebsite }: AIRecommendationProps) {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label>偏好分类</label>
-                      <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="选择分类（可选）" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">不限分类</SelectItem>
-                          {categories.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+
 
                     <div className="space-y-2">
                       <label>推荐数量</label>

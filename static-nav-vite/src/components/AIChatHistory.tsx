@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
+import { IconMd } from './ui/icon';
 import { 
   MessageSquare, 
   Clock, 
@@ -11,17 +12,15 @@ import {
   RefreshCw,
   Bot,
   User,
-  CheckCircle,
-  AlertCircle
+  CheckCircle
 } from 'lucide-react';
-import { AIRecommendationResponse } from '../services/aiService';
+import { AIRecommendationResponse, AIWebsiteRecommendation } from '../services/aiService';
 
 export interface ChatMessage {
   id: string;
   timestamp: string;
   query: string;
   response: AIRecommendationResponse;
-  category?: string;
   maxResults: number;
 }
 
@@ -31,8 +30,8 @@ interface AIChatHistoryProps {
   onRetryMessage: (message: ChatMessage) => void;
   onCopyMessage: (message: ChatMessage) => void;
   onClearHistory: () => void;
-  onAddWebsite?: (website: any) => void;
-  onBatchAddWebsites?: (websites: any[]) => void;
+  onAddWebsite?: (website: AIWebsiteRecommendation) => void;
+  onBatchAddWebsites?: (websites: AIWebsiteRecommendation[]) => void;
 }
 
 export function AIChatHistory({ 
@@ -112,11 +111,7 @@ export function AIChatHistory({
                     <Badge variant="outline" className="text-xs">
                       {message.maxResults} 个结果
                     </Badge>
-                    {message.category && (
-                      <Badge variant="secondary" className="text-xs">
-                        {message.category}
-                      </Badge>
-                    )}
+
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
@@ -147,16 +142,15 @@ export function AIChatHistory({
                     {expandedMessage === message.id ? (
                       <div className="space-y-2">
                         {message.response.websites.map((site, index) => (
-                          <div key={`${site.title}-${site.url}-${index}`} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border">
-                            <span className="text-lg">{site.icon}</span>
+                                                  <div key={`${site.title}-${site.url}-${index}`} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border">
+                          <IconMd 
+                            icon={site.icon} 
+                          />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{site.title}</p>
                               <p className="text-xs text-muted-foreground truncate">{site.description}</p>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Badge variant="outline" className="text-xs flex-shrink-0">
-                                {site.category}
-                              </Badge>
                               {onAddWebsite && (
                                 <Button
                                   variant="ghost"

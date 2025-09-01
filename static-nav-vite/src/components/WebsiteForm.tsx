@@ -8,10 +8,10 @@ import { Textarea } from './ui/textarea';
 import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { ArrowLeft, Plus, X, Bot, Sparkles, Search, Loader2, MessageSquare, Globe } from 'lucide-react';
-import { categories } from '../data/mockData';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { WebsiteInfoService } from '../services/websiteInfoService';
+
 import { JinjaWebsiteService } from '../services/jinjaWebsiteService';
 import { AIService, AIConfig } from '../services/aiService';
 import { AIConfigDialog } from './AIConfigDialog';
@@ -28,7 +28,6 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
     description: '',
     url: '',
     icon: '🌐',
-    category: '',
     featured: false,
     tags: [] as string[]
   });
@@ -42,14 +41,25 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
 
   useEffect(() => {
     if (website) {
+      console.log('初始化编辑表单，网站数据:', website);
+
       setFormData({
         title: website.title,
         description: website.description,
         url: website.url,
         icon: website.icon,
-        category: website.category,
         featured: website.featured,
         tags: [...website.tags]
+      });
+    } else {
+      // 新增网站时的默认值
+      setFormData({
+        title: '',
+        description: '',
+        url: '',
+        icon: '🌐',
+        featured: false,
+        tags: []
       });
     }
 
@@ -67,7 +77,18 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.url || !formData.description || !formData.category) {
+    
+    // 添加调试信息
+    console.log('提交表单数据:', formData);
+    console.log('验证结果:', {
+      title: !!formData.title,
+      url: !!formData.url,
+      description: !!formData.description
+    });
+    
+    if (!formData.title || !formData.url || !formData.description) {
+      console.error('表单验证失败，缺少必填字段');
+      setError('请填写所有必填字段');
       return;
     }
     
@@ -80,13 +101,25 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
         .replace(/^-|-$/g, '');
     };
     
-    onSave({
+    const websiteData = {
       ...formData,
       addedDate: website?.addedDate || new Date().toISOString().split('T')[0],
       clicks: website?.clicks || 0,
       slug: website?.slug || generateSlug(formData.title),
-      isBuiltIn: false // 用户添加的网站
-    });
+      isBuiltIn: website?.isBuiltIn || false // 保持原有的isBuiltIn状态
+    };
+    
+    console.log('准备保存的网站数据:', websiteData);
+    
+    try {
+      onSave(websiteData);
+      setError(''); // 清除错误信息
+      console.log(`${website ? '编辑' : '添加'}网站成功:`, websiteData);
+    } catch (error) {
+      console.error('保存失败:', error);
+      setError('保存失败，请重试');
+      throw error; // 重新抛出错误，让App组件处理
+    }
   };
 
   const addTag = () => {
@@ -100,10 +133,16 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
   };
 
   const removeTag = (tag: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(t => t !== tag)
-    }));
+    console.log('删除标签:', tag);
+    console.log('删除前的标签:', formData.tags);
+    setFormData(prev => {
+      const newTags = prev.tags.filter(t => t !== tag);
+      console.log('删除后的标签:', newTags);
+      return {
+        ...prev,
+        tags: newTags
+      };
+    });
   };
 
   // 通过URL自动获取网站信息（使用jinja模板）
@@ -125,9 +164,10 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
         title: websiteInfo.title,
         description: websiteInfo.description,
         icon: websiteInfo.icon,
-        category: websiteInfo.category,
         tags: [...websiteInfo.tags]
       }));
+
+
 
       // 显示jinja解析的额外信息
       if (websiteInfo.technologies && websiteInfo.technologies.length > 0) {
@@ -139,9 +179,13 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
       if (websiteInfo.contactInfo) {
         console.log('联系信息:', websiteInfo.contactInfo);
       }
+      
+      console.log('自动获取网站信息成功:', websiteInfo);
     } catch (error) {
       console.error('自动获取网站信息失败:', error);
       setError(error instanceof Error ? error.message : '自动获取失败');
+      
+
     } finally {
       setIsAnalyzing(false);
     }
@@ -173,18 +217,25 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
           description: website.description,
           url: website.url,
           icon: website.icon,
-          category: website.category,
           featured: false,
           tags: website.tags
         });
 
         setActiveTab('manual');
+        
+
+        
+        console.log('AI推荐网站成功:', website);
       } else {
         setError('AI未能生成网站信息，请重试');
+        
+
       }
     } catch (error) {
       console.error('AI聊天失败:', error);
       setError(error instanceof Error ? error.message : 'AI聊天失败');
+      
+
     } finally {
       setIsAnalyzing(false);
     }
@@ -227,6 +278,11 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                  {error}
+                </div>
+              )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="title">网站名称 *</Label>
@@ -275,24 +331,7 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category">分类 *</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择分类" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.filter(cat => cat !== '全部').map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
 
             <div className="space-y-2">
               <Label>标签</Label>
@@ -308,14 +347,18 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2">
+                {(() => { console.log('渲染标签:', formData.tags); return null; })()}
                 {formData.tags.map((tag, index) => (
-                  <Badge key={`${tag}-${index}`} variant="secondary" className="gap-1">
+                  <span 
+                    key={`${tag}-${index}`} 
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-secondary text-secondary-foreground rounded-md border"
+                  >
                     {tag}
                     <X 
                       className="w-3 h-3 cursor-pointer hover:text-destructive" 
                       onClick={() => removeTag(tag)}
                     />
-                  </Badge>
+                  </span>
                 ))}
               </div>
             </div>
@@ -408,10 +451,6 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
                 <div className="space-y-2">
                   <Label>描述</Label>
                   <Textarea value={formData.description} readOnly rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label>分类</Label>
-                  <Input value={formData.category} readOnly />
                 </div>
                 <div className="space-y-2">
                   <Label>标签</Label>
@@ -524,10 +563,6 @@ export function WebsiteForm({ website, onSave, onCancel }: WebsiteFormProps) {
                 <div className="space-y-2">
                   <Label>描述</Label>
                   <Textarea value={formData.description} readOnly rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label>分类</Label>
-                  <Input value={formData.category} readOnly />
                 </div>
                 <div className="space-y-2">
                   <Label>标签</Label>

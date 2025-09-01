@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
-import { categories, mockTags } from '../data/mockData';
+import { mockTags } from '../data/mockData';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 
 interface DetailedTagFilterProps {
@@ -79,7 +79,7 @@ export function DetailedTagFilter({
     viewType: 'grid'
   });
 
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['技术', '设计']));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   // 按分类分组标签
   const tagsByCategory = useMemo(() => {
@@ -114,7 +114,7 @@ export function DetailedTagFilter({
                            website.description.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
                            website.tags.some(tag => tag.toLowerCase().includes(filters.searchQuery.toLowerCase()));
       
-      const matchesCategory = filters.selectedCategory === '全部' || website.category === filters.selectedCategory;
+      const matchesCategory = true; // 移除分类筛选，始终匹配
       const matchesTags = filters.selectedTags.length === 0 || filters.selectedTags.every(tag => website.tags.includes(tag));
       const matchesFeatured = !filters.showFeatured || website.featured;
 
@@ -292,19 +292,7 @@ export function DetailedTagFilter({
 
               {/* 分类筛选 */}
               <div>
-                <Label className="text-sm mb-2 block">分类</Label>
-                <Select value={filters.selectedCategory} onValueChange={(value) => updateFilter('selectedCategory', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
               </div>
 
               {/* 基础筛选选项 */}
