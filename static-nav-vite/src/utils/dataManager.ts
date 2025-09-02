@@ -355,7 +355,7 @@ class DataManager {
   }
 
   // 删除分享链接 - 由于数据现在存储在URL中，这个方法不再需要
-  deleteShare(shareId: string): void {
+  deleteShare(): void {
     // 不需要删除，因为数据直接存储在URL中
     console.log('Share data is stored in URL, no need to delete from storage');
   }
@@ -367,13 +367,22 @@ class DataManager {
   }
 
   // 验证数据格式
-  private validateData(data: any): data is AppData {
+  private validateData(data: unknown): data is AppData {
+    if (!data || typeof data !== 'object') {
+      return false;
+    }
+    
+    const obj = data as Record<string, unknown>;
+    
     return (
-      data &&
-      Array.isArray(data.websites) &&
-      Array.isArray(data.tags) &&
-      Array.isArray(data.tagRelations) &&
-      typeof data.version === 'string'
+      'websites' in obj &&
+      'tags' in obj &&
+      'tagRelations' in obj &&
+      'version' in obj &&
+      Array.isArray(obj.websites) &&
+      Array.isArray(obj.tags) &&
+      Array.isArray(obj.tagRelations) &&
+      typeof obj.version === 'string'
     );
   }
 
@@ -483,6 +492,94 @@ class DataManager {
       totalClicks: data.websites.reduce((sum, w) => sum + w.clicks, 0),
       lastUpdated: data.lastUpdated
     };
+  }
+
+  // 检测重复网站
+  findDuplicateWebsites(websites: Website[]): { [key: string]: Website[] } {
+    const duplicateGroups: { [key: string]: Website[] } = {};
+    const processed = new Set<string>();
+
+    websites.forEach((website, index) => {
+      if (processed.has(website.id)) return;
+
+      const duplicates = websites.filter((other, otherIndex) => {
+        if (index === otherIndex || processed.has(other.id)) return false;
+        
+        // 检查URL是否相同（忽略协议和www）
+        const normalizeUrl = (url: string) => {
+          return url.toLowerCase()
+            .replace(/^https?:\/\//, '')
+            .replace(/^www\./, '')
+            .replace(/\/$/, '');
+        };
+
+        const isSameUrl = normalizeUrl(website.url) === normalizeUrl(other.url);
+        
+        // 检查标题是否相同（忽略大小写和空格）
+        const normalizeTitle = (title: string) => {
+          return title.toLowerCase().trim().replace(/\s+/g, ' ');
+        };
+
+        const isSameTitle = normalizeTitle(website.title) === normalizeTitle(other.title);
+
+        return isSameUrl || isSameTitle;
+      });
+
+      if (duplicates.length > 0) {
+        const groupKey = `group_${Object.keys(duplicateGroups).length}`;
+        duplicateGroups[groupKey] = [website, ...duplicates];
+        
+        // 标记所有重复项为已处理
+        [website, ...duplicates].forEach(site => processed.add(site.id));
+      }
+    });
+
+    return duplicateGroups;
+  }
+
+  // 获取推荐保留的网站（基于多个因素）
+  getRecommendedWebsite(duplicates: Website[]): Website {
+    return duplicates.reduce((best, current) => {
+      const bestScore = this.calculateWebsiteScore(best);
+      const currentScore = this.calculateWebsiteScore(current);
+      
+      return currentScore > bestScore ? current : best;
+    });
+  }
+
+  // 计算网站评分（用于推荐保留）
+  calculateWebsiteScore(website: Website): number {
+    let score = 0;
+    
+    // 点击次数权重
+    score += website.clicks * 2;
+    
+    // 精选状态权重
+    if (website.featured) score += 50;
+    
+    // 描述完整性权重
+    if (website.description && website.description.length > 20) score += 20;
+    if (website.fullDescription && website.fullDescription.length > 50) score += 10;
+    
+    // 标签数量权重
+    score += website.tags.length * 5;
+    
+    // 评分权重
+    if (website.rating && website.rating > 0) score += website.rating * 10;
+    
+    // 最近更新权重
+    if (website.lastUpdated) {
+      const daysSinceUpdate = (Date.now() - new Date(website.lastUpdated).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceUpdate < 30) score += 15;
+      else if (daysSinceUpdate < 90) score += 10;
+    }
+    
+    // 图标存在权重
+    if (website.icon && website.icon !== 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMEMzLjU4IDAgMCAzLjU4IDAgOFMzLjU4IDE2IDggMTZTMTYgMTIuNDIgMTYgOFMxMi40MiAwIDggMFpNOCAxNEMzLjU4IDE0IDIgMTIuNDIgMiA4UzMuNTggMiA4IDJTMTQgMy41OCAxNCA4UzEyLjQyIDE0IDggMTRaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPgo=') {
+      score += 5;
+    }
+    
+    return score;
   }
 }
 

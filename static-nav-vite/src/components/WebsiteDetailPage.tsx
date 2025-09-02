@@ -27,12 +27,12 @@ import {
 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
 import { IconXl } from './ui/icon';
+import { WebsitePreview } from './WebsitePreview';
 
 export function WebsiteDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [website, setWebsite] = useState<Website | null>(null);
-  const [currentScreenshot, setCurrentScreenshot] = useState(0);
 
   useEffect(() => {
     if (slug) {
@@ -230,43 +230,8 @@ export function WebsiteDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* 主要内容 */}
               <div className="lg:col-span-2 space-y-6">
-                {website.screenshots && website.screenshots.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>网站预览</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                          <img
-                            src={website.screenshots[currentScreenshot]}
-                            alt={`${website.title} 截图 ${currentScreenshot + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {website.screenshots.length > 1 && (
-                          <div className="flex gap-2">
-                            {website.screenshots.map((screenshot, index) => (
-                              <button
-                                key={index}
-                                onClick={() => setCurrentScreenshot(index)}
-                                className={`w-16 h-12 rounded-md overflow-hidden border-2 transition-colors ${
-                                  index === currentScreenshot ? 'border-primary' : 'border-border'
-                                }`}
-                              >
-                                <img
-                                  src={screenshot}
-                                  alt={`预览图 ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </button>
-              ))}
-            </div>
-                        )}
-                      </div>
-          </CardContent>
-        </Card>
-                )}
+                {/* 网站预览 - 总是显示，优先显示截图，没有截图时显示 iframe */}
+                <WebsitePreview website={website} />
 
                 <Card>
             <CardHeader>

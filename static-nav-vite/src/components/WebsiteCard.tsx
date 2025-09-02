@@ -40,8 +40,8 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
                       icon={website.icon} 
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-card-foreground hover:text-primary transition-colors truncate">
-                        {website.title}
+                      <h3 className="font-medium text-card-foreground hover:text-primary transition-colors truncate" title={website.title}>
+                        {website.title.length > 8 ? `${website.title.substring(0, 8)}...` : website.title}
                       </h3>
                       {website.featured && (
                         <div className="flex items-center gap-1 mt-1">
@@ -154,8 +154,8 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
                 icon={website.icon} 
               />
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-card-foreground hover:text-primary transition-colors truncate">
-                  {website.title}
+                <h3 className="font-medium text-card-foreground hover:text-primary transition-colors truncate" title={website.title}>
+                  {website.title.length > 8 ? `${website.title.substring(0, 8)}...` : website.title}
                 </h3>
                 {website.featured && (
                   <div className="flex items-center gap-1 mt-1">

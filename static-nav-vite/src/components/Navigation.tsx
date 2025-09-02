@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Website } from '../types/website';
 import { WebsiteCard } from './WebsiteCard';
+import { Pagination } from './Pagination';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
@@ -64,6 +65,10 @@ export function Navigation({
   const [showFeatured, setShowFeatured] = useState(false);
   const [sortBy, setSortBy] = useState<SortType>('default');
   const [viewType, setViewType] = useState<ViewType>('grid');
+  
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   // 获取常用标签（按使用频率排序，取前8个）
   const popularTags = useMemo(() => {
@@ -92,9 +97,11 @@ export function Navigation({
     setSelectedTags([]);
     setShowFeatured(false);
     setSortBy('default');
+    setCurrentPage(1);
   };
 
-  const filteredWebsites = useMemo(() => {
+  // 过滤和排序网站
+  const allFilteredWebsites = useMemo(() => {
     const filtered = websites.filter(website => {
       const matchesSearch = website.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            website.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -124,6 +131,37 @@ export function Navigation({
 
     return filtered;
   }, [websites, searchQuery, selectedTags, showFeatured, sortBy]);
+
+  // 分页计算
+  const totalPages = Math.ceil(allFilteredWebsites.length / itemsPerPage);
+  const paginatedWebsites = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return allFilteredWebsites.slice(startIndex, startIndex + itemsPerPage);
+  }, [allFilteredWebsites, currentPage, itemsPerPage]);
+
+  // 当筛选条件改变时重置到第一页
+  const resetToFirstPage = () => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  };
+
+  // 监听筛选条件变化
+  React.useEffect(() => {
+    resetToFirstPage();
+  }, [searchQuery, selectedTags, showFeatured, sortBy, itemsPerPage]);
+
+  // 分页处理函数
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
 
   const hasActiveFilters = searchQuery || selectedTags.length > 0 || showFeatured;
 
@@ -342,7 +380,7 @@ export function Navigation({
             {/* 筛选结果统计 */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>
-                显示 {filteredWebsites.length} 个网站
+                显示 {allFilteredWebsites.length} 个网站
                 {hasActiveFilters && <span> （已筛选）</span>}
               </span>
             </div>
@@ -351,23 +389,35 @@ export function Navigation({
       </Card>
 
       {/* 网站卡片网格 */}
-      {filteredWebsites.length > 0 ? (
-        <div className={
-          viewType === 'grid' 
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            : "space-y-4"
-        }>
-          {filteredWebsites.map((website) => (
-            <WebsiteCard
-              key={website.id}
-              website={website}
-              onEdit={onEditWebsite}
-              onDelete={onDeleteWebsite}
-              onView={onViewWebsite}
-              onShare={onShareWebsite}
-            />
-          ))}
-        </div>
+      {allFilteredWebsites.length > 0 ? (
+        <>
+          <div className={
+            viewType === 'grid' 
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              : "space-y-4"
+          }>
+            {paginatedWebsites.map((website) => (
+              <WebsiteCard
+                key={website.id}
+                website={website}
+                onEdit={onEditWebsite}
+                onDelete={onDeleteWebsite}
+                onView={onViewWebsite}
+                onShare={onShareWebsite}
+              />
+            ))}
+          </div>
+          
+          {/* 分页组件 */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={allFilteredWebsites.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        </>
       ) : (
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
