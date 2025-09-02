@@ -3,9 +3,8 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Badge } from './ui/badge';
 import { Share, Copy, ExternalLink, TestTube } from 'lucide-react';
-import { dataManager, AppData } from '../utils/dataManager';
+import { dataManager } from '../utils/dataManager';
 
 export function TestShare() {
   const [shareUrl, setShareUrl] = useState('');
@@ -64,6 +63,7 @@ export function TestShare() {
       setTestResult('✅ 分享链接已复制到剪贴板');
     } catch (error) {
       setTestResult('❌ 复制失败');
+      console.error('复制失败:', error);
     }
   };
 

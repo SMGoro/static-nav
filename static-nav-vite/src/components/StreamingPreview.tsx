@@ -1,20 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { 
   Bot, 
   Sparkles, 
   CheckCircle, 
   AlertCircle, 
-  Copy, 
-  ExternalLink,
   StopCircle,
-  Play,
   RotateCcw
 } from 'lucide-react';
-import { StreamChunk, AIWebsiteRecommendation } from '../services/aiService';
+import { AIWebsiteRecommendation } from '../services/aiService';
 import { AIWebsiteCard } from './AIWebsiteCard';
 
 interface StreamingPreviewProps {

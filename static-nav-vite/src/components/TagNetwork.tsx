@@ -5,7 +5,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { ZoomIn, ZoomOut, RotateCcw, Filter } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 interface TagNetworkProps {
   tags: Tag[];

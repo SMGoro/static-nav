@@ -10,10 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Label } from './ui/label';
-import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
 import { Slider } from './ui/slider';
-import { ScrollArea } from './ui/scroll-area';
 import { 
   Plus, 
   Edit, 
@@ -21,13 +19,9 @@ import {
   Network, 
   Tag as TagIcon, 
   Search,
-  Filter,
   BarChart3,
   Link,
   Save,
-  X,
-  Settings,
-  Palette,
   Users,
   TrendingUp,
   Layers,
@@ -169,36 +163,6 @@ export function TagManagement({ websites }: TagManagementProps) {
   // 删除关系
   const handleDeleteRelation = (relationId: string) => {
     setRelations(prev => prev.filter(r => r.id !== relationId));
-  };
-
-  // 获取相关网站
-  const getRelatedWebsites = (tag: Tag) => {
-    return websites.filter(w => w.tags.includes(tag.name));
-  };
-
-  // 获取标签的关联关系
-  const getTagRelations = (tag: Tag) => {
-    return relations.filter(r => r.fromTagId === tag.id || r.toTagId === tag.id);
-  };
-
-  // 批量操作
-  const handleBatchOperation = (operation: string, selectedTagIds: string[]) => {
-    switch (operation) {
-      case 'delete':
-        setTags(prev => prev.filter(t => !selectedTagIds.includes(t.id)));
-        setRelations(prev => prev.filter(r => 
-          !selectedTagIds.includes(r.fromTagId) && !selectedTagIds.includes(r.toTagId)
-        ));
-        break;
-      case 'core':
-        setTags(prev => prev.map(t => 
-          selectedTagIds.includes(t.id) ? { ...t, isCore: true } : t
-        ));
-        break;
-      case 'category':
-        // 这里可以实现批量更改分类
-        break;
-    }
   };
 
   const categories = ['all', '技术', '设计', '效率', '团队', '创作', '学习', '娱乐'];
@@ -521,7 +485,6 @@ export function TagManagement({ websites }: TagManagementProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTags.map(tag => {
               const stats = getTagStats(tag);
-              const tagRelations = getTagRelations(tag);
               
               return (
                 <Card key={tag.id} className="hover:shadow-lg transition-shadow">

@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavig
 import { Website } from './types/website';
 import { Navigation } from './components/Navigation';
 
-import { WebsiteForm } from './components/WebsiteForm';
+import { WebsiteForm } from './components/website-form';
 import { ShareDialog } from './components/ShareDialog';
 import { ImportConfirmDialog } from './components/ImportConfirmDialog';
 import { AIRecommendation } from './components/AIRecommendation';

@@ -7,7 +7,6 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { Progress } from './ui/progress';
 import { Separator } from './ui/separator';
 import { 
   ArrowLeft, 
@@ -17,7 +16,6 @@ import {
   Calendar, 
   BarChart3,
   Star,
-  Clock,
   Globe,
   CreditCard,
   User,
@@ -71,12 +69,6 @@ export function WebsiteDetailPage() {
   const handleShare = () => {
     // 创建单个网站的分享数据
     const localData = dataManager.getLocalData();
-    const shareData = {
-      websites: [website],
-      tags: localData.tags.filter(tag => website.tags.includes(tag.name)),
-      shareId: dataManager.generateShareId(),
-      createdAt: new Date().toISOString()
-    };
     
     // 生成分享链接
     const shareUrl = dataManager.createShareLink(localData, `分享网站：${website.title}`, 7);

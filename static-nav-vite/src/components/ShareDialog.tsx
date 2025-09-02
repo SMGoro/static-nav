@@ -51,6 +51,7 @@ export function ShareDialog({ isOpen, onClose, shareData, onImport }: ShareDialo
       alert('分享链接已复制到剪贴板');
     } catch (error) {
       alert('复制失败');
+      console.error('复制失败:', error);
     }
   };
 
