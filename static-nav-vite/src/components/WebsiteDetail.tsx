@@ -96,8 +96,7 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
               <div className="flex items-start gap-6">
                 <div className="p-4 bg-background rounded-2xl shadow-lg">
                   <IconXl 
-                    icon={website.icon} 
-                    size="xl"
+                    icon={website.icon}
                   />
                 </div>
                 <div className="flex-1">

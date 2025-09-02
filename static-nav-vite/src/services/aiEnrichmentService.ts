@@ -110,7 +110,7 @@ export class AIEnrichmentService {
 - 标题：${website.title}
 - 当前描述：${website.description}
 - URL：${website.url}
-- 分类：${website.category}
+
 - 当前标签：${website.tags.join(', ')}
 
 请生成一个200-300字的详细描述，突出网站的核心价值和特色功能。描述应该：
@@ -136,7 +136,7 @@ export class AIEnrichmentService {
 - 标题：${website.title}
 - 描述：${website.description}
 - URL：${website.url}
-- 分类：${website.category}
+
 - 当前标签：${website.tags.join(', ')}
 
 请推荐10-15个相关标签，要求：
@@ -173,7 +173,7 @@ export class AIEnrichmentService {
 - 标题：${website.title}
 - 描述：${website.description}
 - URL：${website.url}
-- 分类：${website.category}
+
 
 请提取5-8个主要功能特性，要求：
 1. 功能特性要具体明确
@@ -214,7 +214,7 @@ export class AIEnrichmentService {
 - 标题：${website.title}
 - 描述：${website.description}
 - URL：${website.url}
-- 分类：${website.category}
+
 - 标签：${website.tags.join(', ')}
 
 请推荐相关网站，要求：
@@ -268,7 +268,7 @@ export class AIEnrichmentService {
 - 标题：${website.title}
 - 描述：${website.description}
 - URL：${website.url}
-- 分类：${website.category}
+
 
 请生成真实的用户评价，要求：
 1. 评价要真实可信
@@ -320,7 +320,7 @@ export class AIEnrichmentService {
 - 标题：${website.title}
 - 描述：${website.description}
 - URL：${website.url}
-- 分类：${website.category}
+
 - 标签：${website.tags.join(', ')}
 
 请从以下方面进行分析：

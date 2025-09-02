@@ -6,7 +6,6 @@ export interface WebsiteInfo {
   description: string;
   url: string;
   icon: string;
-  category: string;
   tags: string[];
   fullDescription?: string;
   features?: string[];
@@ -88,7 +87,6 @@ export class WebsiteInfoService {
   }
 
   private async analyzeWithAI(basicInfo: Partial<WebsiteInfo>): Promise<{
-    category: string;
     tags: string[];
     fullDescription: string;
     features: string[];
@@ -108,7 +106,7 @@ export class WebsiteInfoService {
 请按照以下JSON格式返回分析结果：
 
 {
-  "category": "网站分类",
+
   "tags": ["标签1", "标签2", "标签3"],
   "fullDescription": "详细的网站描述",
   "features": ["特性1", "特性2"],
@@ -126,7 +124,7 @@ export class WebsiteInfoService {
       });
 
       const aiData = response.websites[0] || {} as {
-        category?: string;
+
         tags?: string[];
         fullDescription?: string;
         features?: string[];
@@ -136,7 +134,7 @@ export class WebsiteInfoService {
       };
       
       return {
-        category: aiData.category || '其他',
+
         tags: aiData.tags || [],
         fullDescription: aiData.fullDescription || basicInfo.metaDescription || '',
         features: aiData.features || [],
@@ -149,7 +147,7 @@ export class WebsiteInfoService {
     } catch (error) {
       console.error('AI分析失败:', error);
       return {
-        category: '其他',
+
         tags: ['网站'],
         fullDescription: basicInfo.metaDescription || '',
         features: [],
@@ -163,7 +161,6 @@ export class WebsiteInfoService {
   }
 
   private mergeWebsiteInfo(basicInfo: Partial<WebsiteInfo>, aiAnalysis: {
-    category: string;
     tags: string[];
     fullDescription: string;
     features: string[];
@@ -178,7 +175,7 @@ export class WebsiteInfoService {
       description: basicInfo.metaDescription || aiAnalysis.fullDescription || '',
       url: basicInfo.url || '',
       icon: basicInfo.icon || '🌐',
-      category: aiAnalysis.category || '其他',
+
       tags: [...(aiAnalysis.tags || []), '自动获取'],
       fullDescription: aiAnalysis.fullDescription || basicInfo.metaDescription || '',
       features: aiAnalysis.features || [],
@@ -218,67 +215,6 @@ export class WebsiteInfoService {
     if (domain.includes('instagram')) return '📷';
     if (domain.includes('reddit')) return '🤖';
     if (domain.includes('discord')) return '💬';
-    if (domain.includes('notion')) return '📋';
-    if (domain.includes('figma')) return '🎨';
-    if (domain.includes('behance')) return '🎨';
-    if (domain.includes('dribbble')) return '🏀';
-    if (domain.includes('codepen')) return '💻';
-    if (domain.includes('jsfiddle')) return '💻';
-    if (domain.includes('codesandbox')) return '🏖️';
-    if (domain.includes('replit')) return '🔄';
-    if (domain.includes('vercel')) return '▲';
-    if (domain.includes('netlify')) return '🚀';
-    if (domain.includes('heroku')) return '🦸';
-    if (domain.includes('aws')) return '☁️';
-    if (domain.includes('google')) return '🔍';
-    if (domain.includes('microsoft')) return '🪟';
-    if (domain.includes('apple')) return '🍎';
-    if (domain.includes('amazon')) return '📦';
-    if (domain.includes('shopify')) return '🛒';
-    if (domain.includes('wordpress')) return '📝';
-    if (domain.includes('wix')) return '🎨';
-    if (domain.includes('squarespace')) return '⬜';
-    if (domain.includes('webflow')) return '🌊';
-    if (domain.includes('framer')) return '🎯';
-    if (domain.includes('bubble')) return '🫧';
-    if (domain.includes('airtable')) return '📊';
-    if (domain.includes('roam')) return '🧠';
-    if (domain.includes('obsidian')) return '💎';
-    if (domain.includes('logseq')) return '📝';
-    if (domain.includes('craft')) return '✂️';
-    if (domain.includes('bear')) return '🐻';
-    if (domain.includes('ulysses')) return '📖';
-    if (domain.includes('scrivener')) return '✍️';
-    if (domain.includes('grammarly')) return '✏️';
-    if (domain.includes('hemingway')) return '📝';
-    if (domain.includes('prowritingaid')) return '✍️';
-    if (domain.includes('calibre')) return '📖';
-    if (domain.includes('kindle')) return '📱';
-    if (domain.includes('audible')) return '🎧';
-    if (domain.includes('spotify')) return '🎵';
-    if (domain.includes('apple-music')) return '🎵';
-    if (domain.includes('tidal')) return '🌊';
-    if (domain.includes('deezer')) return '🎵';
-    if (domain.includes('pandora')) return '📻';
-    if (domain.includes('lastfm')) return '📊';
-    if (domain.includes('soundcloud')) return '☁️';
-    if (domain.includes('bandcamp')) return '🎸';
-    if (domain.includes('mixcloud')) return '☁️';
-    if (domain.includes('anchor')) return '⚓';
-    if (domain.includes('libsyn')) return '🎙️';
-    if (domain.includes('buzzsprout')) return '🎙️';
-    if (domain.includes('transistor')) return '📻';
-    if (domain.includes('simplecast')) return '🎙️';
-    if (domain.includes('megaphone')) return '📢';
-    if (domain.includes('spreaker')) return '🎙️';
-    if (domain.includes('iheartradio')) return '❤️';
-    if (domain.includes('tunein')) return '📻';
-    if (domain.includes('radio.com')) return '📻';
-    if (domain.includes('pocketcasts')) return '🎧';
-    if (domain.includes('overcast')) return '☁️';
-    if (domain.includes('castbox')) return '📦';
-    if (domain.includes('podbean')) return '🫘';
-    if (domain.includes('blubrry')) return '🫘';
     
     return '🌐';
   }
@@ -290,7 +226,7 @@ export class WebsiteInfoService {
       url: websiteInfo.url,
       icon: websiteInfo.icon,
       tags: websiteInfo.tags,
-      category: '其他', // 移除分类功能，使用默认值
+
       addedDate: new Date().toISOString(),
       clicks: 0,
       featured: false,

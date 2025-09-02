@@ -32,7 +32,7 @@ export function WebsiteCard({ website, onEdit, onDelete, onView, onShare }: Webs
       {/* 如果有slug，使用路由链接 */}
       {website.slug ? (
         <Link to={`/website/${website.slug}`} className="block">
-          <div className="p-6">
+          <div className="p-1">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 flex-1">

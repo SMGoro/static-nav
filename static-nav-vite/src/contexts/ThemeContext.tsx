@@ -10,6 +10,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -59,7 +60,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     
     const calculatedTheme = calculateActualTheme(initialTheme);
     applyTheme(calculatedTheme);
-  }, []);
+  }, [calculateActualTheme]);
 
   // 监听系统主题变化
   useEffect(() => {
@@ -73,14 +74,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  }, [calculateActualTheme, theme]);
 
   // 主题变化时更新
   useEffect(() => {
     const newActualTheme = calculateActualTheme(theme);
     applyTheme(newActualTheme);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [calculateActualTheme, theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, actualTheme }}>

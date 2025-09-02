@@ -82,7 +82,7 @@ function AppContent() {
         saveData(defaultData);
       }
     }
-  }, []); // 只在组件挂载时执行一次
+  }, [appData]); // 只在组件挂载时执行一次
 
   const websites = appData.websites;
 
@@ -101,7 +101,7 @@ function AppContent() {
     navigate(`/edit/${website.slug || website.id}`);
   };
 
-  const handleSaveWebsite = (websiteData: Omit<Website, 'id'>) => {
+  const handleSaveWebsite = async (websiteData: Omit<Website, 'id'>) => {
     try {
       console.log('handleSaveWebsite 被调用');
       console.log('当前路径:', location.pathname);
@@ -147,6 +147,11 @@ function AppContent() {
             description: `网站"${websiteData.title}"已更新成功。`,
             duration: 3000,
           });
+          
+          // 编辑成功后跳转到网站详情页面
+          setTimeout(() => {
+            navigate(`/website/${updatedWebsite.slug || updatedWebsite.id}`);
+          }, 100);
         } else {
           throw new Error('未找到要编辑的网站');
         }
@@ -172,12 +177,6 @@ function AppContent() {
       
       console.log('保存数据');
       saveData(newAppData);
-      
-      // 根据当前路径判断是否跳转到主页
-      if (location.pathname.startsWith('/edit/')) {
-        console.log('跳转到主页');
-        navigate('/');
-      }
       setEditingWebsite(null);
       
     } catch (error) {
@@ -279,7 +278,7 @@ function AppContent() {
           <WebsiteForm
             website={website}
             onSave={handleSaveWebsite}
-            onCancel={() => navigate('/')}
+            onCancel={() => navigate(`/website/${website.slug || website.id}`)}
           />
         );
       }

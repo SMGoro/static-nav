@@ -22,7 +22,7 @@ export function SEOHead({
 }: SEOHeadProps) {
   const pageTitle = title || (website ? `${website.title} - 导航站` : '导航站 - 精选网站导航');
   const pageDescription = description || (website ? website.description : '发现优质网站，精选互联网资源导航');
-  const pageKeywords = keywords || (website ? `${website.title},${website.category},${website.tags.join(',')}` : '网站导航,优质网站,互联网资源');
+  const pageKeywords = keywords || (website ? `${website.title},${website.tags.join(',')}` : '网站导航,优质网站,互联网资源');
   const pageImage = image || (website?.screenshots?.[0] || '/favicon.ico');
   const pageUrl = url || (website ? `${window.location.origin}/website/${website.slug || website.id}` : window.location.href);
 
@@ -78,7 +78,7 @@ export function SEOHead({
                 "ratingValue": website.rating,
                 "reviewCount": website.reviews?.length || 0
               } : undefined,
-              "category": website.category,
+
               "keywords": website.tags.join(', '),
               "inLanguage": website.language || "zh-CN"
             })

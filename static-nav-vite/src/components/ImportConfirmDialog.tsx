@@ -194,7 +194,7 @@ export function ImportConfirmDialog({
                                 </Badge>
                               )}
                               <span className="text-xs text-muted-foreground">
-                                {website.category}
+                                其他
                               </span>
                             </div>
                           </div>
@@ -267,7 +267,7 @@ export function ImportConfirmDialog({
                                 重复
                               </Badge>
                               <span className="text-xs text-muted-foreground">
-                                {website.category}
+                                其他
                               </span>
                             </div>
                           </div>

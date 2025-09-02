@@ -8,10 +8,10 @@ import { Textarea } from './ui/textarea';
 import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { ArrowLeft, Plus, X, Bot, Sparkles, Search, Loader2, MessageSquare, Globe } from 'lucide-react';
-import { categories } from '../data/mockData';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { WebsiteInfoService } from '../services/websiteInfoService';
+import { LinkPreviewService } from '../services/linkPreviewService';
 import { AIService, AIConfig } from '../services/aiService';
 import { AIConfigDialog } from './AIConfigDialog';
 
@@ -27,9 +27,13 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
     description: '',
     url: '',
     icon: '🌐',
-    category: '',
     featured: false,
-    tags: [] as string[]
+    tags: [] as string[],
+    // 高级设置
+    fullDescription: '',
+    authoredBy: '',
+    language: '多语言',
+    image: ''
   });
   const [newTag, setNewTag] = useState('');
   const [activeTab, setActiveTab] = useState('manual');
@@ -38,6 +42,8 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
   const [aiConfig, setAiConfig] = useState<AIConfig>(AIService.getDefaultConfig());
   const [showConfigDialog, setShowConfigDialog] = useState(false);
   const [error, setError] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isAIGenerating, setIsAIGenerating] = useState(false);
 
   useEffect(() => {
     if (website) {
@@ -46,9 +52,12 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
         description: website.description,
         url: website.url,
         icon: website.icon,
-        category: website.category,
         featured: website.featured,
-        tags: [...website.tags]
+        tags: [...website.tags],
+        fullDescription: website.fullDescription || '',
+        authoredBy: website.authoredBy || '',
+        language: website.language || '多语言',
+        image: website.screenshots?.[0] || ''
       });
     }
 
@@ -66,7 +75,7 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.url || !formData.description || !formData.category) {
+    if (!formData.title || !formData.url || !formData.description) {
       setError('请填写所有必填字段');
       return;
     }
@@ -84,7 +93,11 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
       addedDate: website?.addedDate || new Date().toISOString().split('T')[0],
       clicks: website?.clicks || 0,
       slug: website?.slug || generateSlug(formData.title),
-      isBuiltIn: false
+      isBuiltIn: false,
+      fullDescription: formData.fullDescription,
+      authoredBy: formData.authoredBy,
+      language: formData.language,
+      screenshots: formData.image ? [formData.image] : undefined
     });
   };
 
@@ -116,16 +129,16 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
     setError('');
 
     try {
-      const websiteInfoService = new WebsiteInfoService(aiConfig);
-      const websiteInfo = await websiteInfoService.getWebsiteInfo(formData.url);
+      const linkPreviewService = new LinkPreviewService();
+      const websiteInfo = await linkPreviewService.getWebsiteInfo(formData.url);
       
       setFormData(prev => ({
         ...prev,
         title: websiteInfo.title,
         description: websiteInfo.description,
         icon: websiteInfo.icon,
-        category: '其他', // 移除分类功能，使用默认值
-        tags: [...websiteInfo.tags]
+        tags: [...websiteInfo.tags],
+        image: websiteInfo.image || ''
       }));
     } catch (error) {
       console.error('自动获取网站信息失败:', error);
@@ -161,9 +174,12 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
           description: website.description,
           url: website.url,
           icon: website.icon,
-          category: '其他', // 移除分类功能，使用默认值
           featured: false,
-          tags: website.tags
+          tags: website.tags,
+          fullDescription: '',
+          authoredBy: '',
+          language: '多语言',
+          image: ''
         });
 
         setActiveTab('manual');
@@ -181,6 +197,88 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
   const handleSaveConfig = (config: AIConfig) => {
     setAiConfig(config);
     localStorage.setItem('ai_config', JSON.stringify(config));
+  };
+
+  // AI自动填写功能
+  const handleAIAutoFill = async () => {
+    if (!formData.url.trim()) {
+      setError('请先输入网站URL');
+      return;
+    }
+
+    setIsAIGenerating(true);
+    setError('');
+
+    try {
+      // 首先获取网站基本信息
+      const linkPreviewService = new LinkPreviewService();
+      const websiteInfo = await linkPreviewService.getWebsiteInfo(formData.url);
+      
+      // 使用AI优化信息
+      const aiService = new AIService(aiConfig);
+      const prompt = `请基于以下网站信息生成更详细的介绍和标签：
+
+网站标题：${websiteInfo.title}
+网站描述：${websiteInfo.description}
+网站URL：${websiteInfo.url}
+当前标签：${websiteInfo.tags.join(', ')}
+
+请生成：
+1. 更详细的网站介绍（200-300字）
+2. 更准确的标签（5-8个）
+3. 网站作者信息
+4. 主要语言
+
+请以JSON格式返回：
+{
+  "fullDescription": "详细的网站介绍",
+  "tags": ["标签1", "标签2", "标签3"],
+  "authoredBy": "作者或公司",
+  "language": "主要语言"
+}`;
+
+      const response = await aiService.getRecommendations({
+        query: prompt,
+        maxResults: 1
+      });
+
+      // 解析AI响应
+      let aiData = {
+        fullDescription: websiteInfo.description,
+        tags: websiteInfo.tags,
+        authoredBy: '',
+        language: '多语言'
+      };
+
+      try {
+        const jsonMatch = response.reasoning.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          aiData = { ...aiData, ...parsed };
+        }
+      } catch (parseError) {
+        console.warn('AI响应解析失败，使用默认值:', parseError);
+      }
+
+      // 更新表单数据
+      setFormData(prev => ({
+        ...prev,
+        title: websiteInfo.title,
+        description: websiteInfo.description,
+        icon: websiteInfo.icon,
+        tags: [...new Set([...aiData.tags, ...websiteInfo.tags])],
+        fullDescription: aiData.fullDescription,
+        authoredBy: aiData.authoredBy,
+        language: aiData.language,
+        image: websiteInfo.image || ''
+      }));
+
+    } catch (error) {
+      console.error('AI自动填写失败:', error);
+      setError(error instanceof Error ? error.message : 'AI自动填写失败');
+    } finally {
+      setIsAIGenerating(false);
+    }
   };
 
   return (
@@ -242,14 +340,39 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
 
                 <div className="space-y-2">
                   <Label htmlFor="url">网站链接 *</Label>
-                  <Input
-                    id="url"
-                    type="url"
-                    value={formData.url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
-                    placeholder="https://example.com"
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="url"
+                      type="url"
+                      value={formData.url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
+                      placeholder="https://example.com"
+                      required
+                      className="flex-1"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleAIAutoFill}
+                      disabled={!formData.url.trim() || isAIGenerating}
+                      className="gap-2"
+                    >
+                      {isAIGenerating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          AI生成中...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          AI自动填写
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    AI将自动获取网站信息并生成详细的介绍和标签
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -264,24 +387,7 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category">分类 *</Label>
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择分类" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.filter(cat => cat !== '全部').map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+
 
                 <div className="space-y-2">
                   <Label>标签</Label>
@@ -298,12 +404,19 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {formData.tags.map((tag, index) => (
-                      <Badge key={`${tag}-${index}`} variant="secondary" className="gap-1">
-                        {tag}
-                        <X 
-                          className="w-3 h-3 cursor-pointer hover:text-destructive" 
-                          onClick={() => removeTag(tag)}
-                        />
+                      <Badge key={`${tag}-${index}`} variant="secondary" className="gap-1 pr-1">
+                        <span>{tag}</span>
+                        <button
+                          type="button"
+                          className="ml-1 hover:bg-destructive/20 rounded-sm p-0.5"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeTag(tag);
+                          }}
+                        >
+                          <X className="w-3 h-3 text-muted-foreground hover:text-destructive" />
+                        </button>
                       </Badge>
                     ))}
                   </div>
@@ -318,7 +431,85 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
                     />
                     <Label htmlFor="featured">设为精选</Label>
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="gap-2"
+                  >
+                    {showAdvanced ? '隐藏' : '显示'}高级设置
+                  </Button>
                 </div>
+
+                {showAdvanced && (
+                  <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                    <h3 className="text-lg font-semibold">高级设置</h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="fullDescription">详细介绍</Label>
+                      <Textarea
+                        id="fullDescription"
+                        value={formData.fullDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, fullDescription: e.target.value }))}
+                        placeholder="输入网站的详细介绍..."
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="authoredBy">作者/公司</Label>
+                        <Input
+                          id="authoredBy"
+                          value={formData.authoredBy}
+                          onChange={(e) => setFormData(prev => ({ ...prev, authoredBy: e.target.value }))}
+                          placeholder="网站作者或公司名称"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="language">主要语言</Label>
+                        <Select 
+                          value={formData.language} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="选择语言" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="中文">中文</SelectItem>
+                            <SelectItem value="English">English</SelectItem>
+                            <SelectItem value="多语言">多语言</SelectItem>
+                            <SelectItem value="其他">其他</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="image">网站图片</Label>
+                      <Input
+                        id="image"
+                        value={formData.image}
+                        onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                        placeholder="网站截图或logo图片URL"
+                      />
+                      {formData.image && (
+                        <div className="w-full max-w-md">
+                          <img 
+                            src={formData.image} 
+                            alt="网站预览" 
+                            className="w-full h-32 object-cover rounded-lg border"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={onCancel}>
@@ -373,7 +564,7 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  输入网站URL，AI将自动获取网站标题、描述、分类等信息
+                  输入网站URL，将自动获取网站标题、描述、图标等信息
                 </p>
               </div>
 
@@ -385,6 +576,23 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
 
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">获取结果预览</h3>
+                
+                {formData.image && (
+                  <div className="space-y-2">
+                    <Label>网站图片</Label>
+                    <div className="w-full max-w-md">
+                      <img 
+                        src={formData.image} 
+                        alt="网站预览" 
+                        className="w-full h-48 object-cover rounded-lg border"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>网站名称</Label>
@@ -398,10 +606,6 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
                 <div className="space-y-2">
                   <Label>描述</Label>
                   <Textarea value={formData.description} readOnly rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label>分类</Label>
-                  <Input value={formData.category} readOnly />
                 </div>
                 <div className="space-y-2">
                   <Label>标签</Label>
@@ -505,10 +709,7 @@ export function WebsiteFormEnhanced({ website, onSave, onCancel }: WebsiteFormEn
                   <Label>描述</Label>
                   <Textarea value={formData.description} readOnly rows={3} />
                 </div>
-                <div className="space-y-2">
-                  <Label>分类</Label>
-                  <Input value={formData.category} readOnly />
-                </div>
+
                 <div className="space-y-2">
                   <Label>标签</Label>
                   <div className="flex flex-wrap gap-2">

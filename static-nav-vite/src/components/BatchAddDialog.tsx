@@ -106,7 +106,7 @@ export function BatchAddDialog({ isOpen, onClose, websites, onAddWebsites }: Bat
       url: website.url,
       icon: website.icon || '🌐',
       tags: website.tags,
-      category: website.category,
+
       addedDate: new Date().toISOString(),
       clicks: 0,
       featured: false,

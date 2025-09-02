@@ -326,7 +326,7 @@ export function ShareDialog({ isOpen, onClose, shareData, onImport }: ShareDialo
                             </Badge>
                           )}
                           <span className="text-xs text-muted-foreground">
-                            {website.category}
+                            其他
                           </span>
                         </div>
                       </div>
