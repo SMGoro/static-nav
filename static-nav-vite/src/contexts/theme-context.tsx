@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -28,21 +28,21 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
 
   // 获取系统主题
-  const getSystemTheme = (): 'light' | 'dark' => {
+  const getSystemTheme = useCallback((): 'light' | 'dark' => {
     if (typeof window === 'undefined') return 'light';
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
+  }, []);
 
   // 计算实际主题
-  const calculateActualTheme = (currentTheme: Theme): 'light' | 'dark' => {
+  const calculateActualTheme = useCallback((currentTheme: Theme): 'light' | 'dark' => {
     if (currentTheme === 'system') {
       return getSystemTheme();
     }
     return currentTheme;
-  };
+  }, [getSystemTheme]);
 
   // 应用主题到DOM
-  const applyTheme = (newTheme: 'light' | 'dark') => {
+  const applyTheme = useCallback((newTheme: 'light' | 'dark') => {
     const root = document.documentElement;
     if (newTheme === 'dark') {
       root.classList.add('dark');
@@ -50,7 +50,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       root.classList.remove('dark');
     }
     setActualTheme(newTheme);
-  };
+  }, []);
 
   // 初始化主题
   useEffect(() => {
@@ -60,7 +60,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     
     const calculatedTheme = calculateActualTheme(initialTheme);
     applyTheme(calculatedTheme);
-  }, [calculateActualTheme]);
+  }, []); // 只在组件挂载时执行一次
 
   // 监听系统主题变化
   useEffect(() => {
@@ -74,14 +74,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [calculateActualTheme, theme]);
+  }, [theme, calculateActualTheme, applyTheme]);
 
   // 主题变化时更新
   useEffect(() => {
     const newActualTheme = calculateActualTheme(theme);
     applyTheme(newActualTheme);
     localStorage.setItem('theme', theme);
-  }, [calculateActualTheme, theme]);
+  }, [theme, calculateActualTheme, applyTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, actualTheme }}>
