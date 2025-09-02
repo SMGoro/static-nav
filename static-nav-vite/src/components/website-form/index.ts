@@ -1,7 +1,7 @@
-export { WebsiteForm } from './WebsiteForm';
-export { TagManager } from './TagManager';
-export { AutoFillSection } from './AutoFillSection';
-export { AIEnhancementSection } from './AIEnhancementSection';
-export { AdvancedSettings } from './AdvancedSettings';
-export { SuccessDialog } from './SuccessDialog';
+export { WebsiteForm } from './website-form';
+export { TagManager } from './tag-manager';
+export { AutoFillSection } from './auto-fill-section';
+export { AIEnhancementSection } from './ai-enhancement-section';
+export { AdvancedSettings } from './advanced-settings';
+export { SuccessDialog } from './success-dialog';
 export * from './types';

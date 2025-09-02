@@ -1,26 +1,26 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Website } from './types/website';
-import { Navigation } from './components/Navigation';
+import { Navigation } from './components/navigation';
 
 import { WebsiteForm } from './components/website-form';
-import { ShareDialog } from './components/ShareDialog';
-import { ImportConfirmDialog } from './components/ImportConfirmDialog';
-import { AIRecommendation } from './components/AIRecommendation';
-import { TagManagement } from './components/TagManagement';
-import { DetailedTagFilter } from './components/DetailedTagFilter';
-import { DataManager } from './components/DataManager';
-import { WebsiteDetailPage } from './components/WebsiteDetailPage';
-import { ShareTest } from './components/ShareTest';
-import { ThemeToggle } from './components/ThemeToggle';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { SEOHead } from './components/SEOHead';
+import { ShareDialog } from './components/share-dialog';
+import { ImportConfirmDialog } from './components/data-management/import-confirm-dialog';
+import { AIRecommendation } from './components/ai/ai-recommendation';
+import { TagManagement } from './components/tag-management/tag-management';
+import { DetailedTagFilter } from './components/detailed-tag-filter';
+import { DataManager } from './components/data-management/data-manager';
+import { WebsiteDetailPage } from './components/website/website-detail-page';
+import { ShareTest } from './components/share-test';
+import { ThemeToggle } from './components/theme-toggle';
+import { ThemeProvider } from './contexts/theme-context';
+import { ErrorBoundary } from './components/error-boundary';
+import { SEOHead } from './components/seo-head';
 
 import { Button } from './components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
 import { Bot, Home, Plus, Tag, Filter, Menu, X, Database, TestTube } from 'lucide-react';
-import { dataManager, AppData, ShareData, DuplicateCheckResult } from './utils/dataManager';
+import { dataManager, AppData, ShareData, DuplicateCheckResult } from './utils/data-manager';
 import { toast, Toaster } from 'sonner';
 
 // 主应用内容组件

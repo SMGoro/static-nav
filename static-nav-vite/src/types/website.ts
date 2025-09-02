@@ -42,6 +42,7 @@ export interface TagRelation {
   relationType: 'similar' | 'parent' | 'child' | 'complement' | 'alternative';
   strength: number; // 关系强度 0-1
   description?: string;
+  createdDate?: string;
 }
 
 export interface Review {

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Website } from '../types/website';
-import { WebsiteCard } from './WebsiteCard';
-import { Pagination } from './Pagination';
+import { WebsiteCard } from './website/website-card';
+import { Pagination } from './pagination';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
@@ -22,7 +22,7 @@ import {
   Share
 } from 'lucide-react';
 
-import { mockTags } from '../data/mockData';
+import { mockTags } from '../data/mock-data';
 import {
   DropdownMenu,
   DropdownMenuContent,
