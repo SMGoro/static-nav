@@ -273,30 +273,36 @@ export function DataManager() {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <Database className="w-4 h-4" />
-            数据概览
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto">
+          <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Database className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">数据概览</span>
+            <span className="sm:hidden">概览</span>
           </TabsTrigger>
-          <TabsTrigger value="batch" className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            批量管理
+          <TabsTrigger value="batch" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">批量管理</span>
+            <span className="sm:hidden">批量</span>
           </TabsTrigger>
-          <TabsTrigger value="duplicate" className="flex items-center gap-2">
-            <Search className="w-4 h-4" />
-            重复检测
+          <TabsTrigger value="duplicate" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Search className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">重复检测</span>
+            <span className="sm:hidden">重复</span>
           </TabsTrigger>
-          <TabsTrigger value="restore" className="flex items-center gap-2">
-            <RotateCcw className="w-4 h-4" />
-            数据恢复
+          <TabsTrigger value="restore" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">数据恢复</span>
+            <span className="sm:hidden">恢复</span>
           </TabsTrigger>
-          <TabsTrigger value="import-export" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            导入导出
+          <TabsTrigger value="import-export" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">导入导出</span>
+            <span className="sm:hidden">导入</span>
           </TabsTrigger>
-          <TabsTrigger value="share" className="flex items-center gap-2">
-            <Share className="w-4 h-4" />
-            分享管理
+          <TabsTrigger value="share" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Share className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">分享管理</span>
+            <span className="sm:hidden">分享</span>
           </TabsTrigger>
         </TabsList>
 
@@ -307,25 +313,25 @@ export function DataManager() {
               <CardTitle>数据统计</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{stats.totalWebsites}</div>
-                  <div className="text-sm text-muted-foreground">网站总数</div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-muted/30">
+                  <div className="text-xl sm:text-2xl font-bold text-primary">{stats.totalWebsites}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">网站总数</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{stats.totalTags}</div>
-                  <div className="text-sm text-muted-foreground">标签总数</div>
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-muted/30">
+                  <div className="text-xl sm:text-2xl font-bold text-primary">{stats.totalTags}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">标签总数</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{stats.featuredWebsites}</div>
-                  <div className="text-sm text-muted-foreground">精选网站</div>
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-muted/30">
+                  <div className="text-xl sm:text-2xl font-bold text-primary">{stats.featuredWebsites}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">精选网站</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{stats.totalClicks}</div>
-                  <div className="text-sm text-muted-foreground">总点击量</div>
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-muted/30">
+                  <div className="text-xl sm:text-2xl font-bold text-primary">{stats.totalClicks}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">总点击量</div>
                 </div>
               </div>
-              <div className="mt-4 text-sm text-muted-foreground">
+              <div className="mt-4 text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
                 最后更新: {formatDate(stats.lastUpdated)}
               </div>
             </CardContent>
@@ -340,43 +346,47 @@ export function DataManager() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Button 
                   onClick={() => setShowBookmarkImport(true)}
-                  className="h-20 flex-col gap-2"
+                  className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 text-xs sm:text-sm"
                 >
-                  <BookOpen className="w-6 h-6" />
-                  导入收藏夹
+                  <BookOpen className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="hidden sm:inline">导入收藏夹</span>
+                  <span className="sm:hidden">导入收藏夹</span>
                 </Button>
                 
                 <Button 
                   onClick={exportBookmarks}
                   variant="outline"
-                  className="h-20 flex-col gap-2"
+                  className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 text-xs sm:text-sm"
                   disabled={isExportingBookmarks}
                 >
-                  <FileText className="w-6 h-6" />
-                  {isExportingBookmarks ? '导出中...' : '导出收藏夹'}
+                  <FileText className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="hidden sm:inline">{isExportingBookmarks ? '导出中...' : '导出收藏夹'}</span>
+                  <span className="sm:hidden">{isExportingBookmarks ? '导出中...' : '导出收藏夹'}</span>
                 </Button>
                 
                 <Button 
                   onClick={exportData}
                   variant="outline"
-                  className="h-20 flex-col gap-2"
+                  className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 text-xs sm:text-sm"
                   disabled={isExporting}
                 >
-                  <Download className="w-6 h-6" />
-                  {isExporting ? '导出中...' : '导出数据'}
+                  <Download className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="hidden sm:inline">{isExporting ? '导出中...' : '导出数据'}</span>
+                  <span className="sm:hidden">{isExporting ? '导出中...' : '导出数据'}</span>
                 </Button>
                 
                 <Button 
                   onClick={createShare}
                   variant="outline"
-                  className="h-20 flex-col gap-2"
+                  className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 text-xs sm:text-sm"
                   disabled={isCreatingShare}
                 >
-                  <Share className="w-6 h-6" />
-                  {isCreatingShare ? '创建中...' : '创建分享'}
+                  <Share className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="hidden sm:inline">{isCreatingShare ? '创建中...' : '创建分享'}</span>
+                  <span className="sm:hidden">{isCreatingShare ? '创建中...' : '创建分享'}</span>
                 </Button>
               </div>
             </CardContent>
@@ -450,11 +460,11 @@ export function DataManager() {
           </Card>
 
           {/* 数据导入导出 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>数据导入导出</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg sm:text-xl">数据导入导出</CardTitle>
+                <CardDescription className="text-sm">
                   备份和恢复您的网站数据
                 </CardDescription>
               </CardHeader>
@@ -462,11 +472,11 @@ export function DataManager() {
                 <div className="space-y-2">
                   <Button 
                     onClick={exportData} 
-                    className="w-full gap-2"
+                    className="w-full gap-2 h-10 sm:h-11"
                     disabled={isExporting}
                   >
                     <Download className="w-4 h-4" />
-                    {isExporting ? '导出中...' : '导出数据'}
+                    <span className="text-sm">{isExporting ? '导出中...' : '导出数据'}</span>
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     将当前数据导出为JSON文件
@@ -484,11 +494,11 @@ export function DataManager() {
                   <Button 
                     onClick={selectFile} 
                     variant="outline" 
-                    className="w-full gap-2"
+                    className="w-full gap-2 h-10 sm:h-11"
                     disabled={isImporting}
                   >
                     <Upload className="w-4 h-4" />
-                    {isImporting ? '导入中...' : '导入数据'}
+                    <span className="text-sm">{isImporting ? '导入中...' : '导入数据'}</span>
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     从JSON文件导入数据（会合并到现有数据）
@@ -500,8 +510,8 @@ export function DataManager() {
             {/* 数据重置 */}
             <Card>
               <CardHeader>
-                <CardTitle>数据重置</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg sm:text-xl">数据重置</CardTitle>
+                <CardDescription className="text-sm">
                   危险操作，请谨慎使用
                 </CardDescription>
               </CardHeader>
@@ -510,11 +520,11 @@ export function DataManager() {
                   <Button 
                     onClick={resetData} 
                     variant="destructive" 
-                    className="w-full gap-2"
+                    className="w-full gap-2 h-10 sm:h-11"
                     disabled={isResetting}
                   >
                     <Trash2 className="w-4 h-4" />
-                    {isResetting ? '重置中...' : '重置所有数据'}
+                    <span className="text-sm">{isResetting ? '重置中...' : '重置所有数据'}</span>
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     清空所有数据（不可恢复）
@@ -529,21 +539,21 @@ export function DataManager() {
           {/* 创建分享 */}
           <Card>
             <CardHeader>
-              <CardTitle>创建分享链接</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl">创建分享链接</CardTitle>
+              <CardDescription className="text-sm">
                 将您的网站数据分享给其他人
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Input
                   value={shareMessage}
                   onChange={(e) => setShareMessage(e.target.value)}
                   placeholder="分享说明（可选）"
-                  className="w-full"
+                  className="w-full h-10 sm:h-11"
                 />
                 <Select value={shareExpiresIn} onValueChange={setShareExpiresIn}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 sm:h-11">
                     <SelectValue placeholder="选择过期时间" />
                   </SelectTrigger>
                   <SelectContent>
@@ -555,11 +565,11 @@ export function DataManager() {
                 </Select>
                 <Button 
                   onClick={createShare} 
-                  className="w-full gap-2"
+                  className="w-full gap-2 h-10 sm:h-11"
                   disabled={isCreatingShare}
                 >
                   <Share className="w-4 h-4" />
-                  {isCreatingShare ? '创建中...' : '创建分享链接'}
+                  <span className="text-sm">{isCreatingShare ? '创建中...' : '创建分享链接'}</span>
                 </Button>
                 <p className="text-xs text-muted-foreground">
                   创建当前数据的分享链接，链接会自动复制到剪贴板
@@ -571,24 +581,25 @@ export function DataManager() {
           {/* 导入分享 */}
           <Card>
             <CardHeader>
-              <CardTitle>导入分享数据</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl">导入分享数据</CardTitle>
+              <CardDescription className="text-sm">
                 从分享链接导入其他人分享的数据
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Input
                   value={shareUrl}
                   onChange={(e) => setShareUrl(e.target.value)}
                   placeholder="输入分享链接或分享ID"
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-11"
                 />
                 <Button 
                   onClick={importShare} 
                   disabled={!shareUrl || isImportingShare}
+                  className="h-10 sm:h-11 px-4 sm:px-6"
                 >
-                  {isImportingShare ? '导入中...' : '导入'}
+                  <span className="text-sm">{isImportingShare ? '导入中...' : '导入'}</span>
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">

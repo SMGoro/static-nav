@@ -34,6 +34,13 @@ export function WebsiteDetailPage() {
   const navigate = useNavigate();
   const [website, setWebsite] = useState<Website | null>(null);
 
+  const handleFilterByTag = (tagName: string) => {
+    // 跳转到主页并设置标签筛选
+    navigate('/');
+    // 使用localStorage来传递筛选信息
+    localStorage.setItem('filterByTag', tagName);
+  };
+
   useEffect(() => {
     if (slug) {
       const localData = dataManager.getLocalData();
@@ -316,11 +323,19 @@ export function WebsiteDetailPage() {
             <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {website.tags.map((tag, index) => (
-                        <Badge key={`${tag}-${index}`} variant="secondary" className="text-xs">
+                        <Badge 
+                          key={`${tag}-${index}`} 
+                          variant="secondary" 
+                          className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => handleFilterByTag(tag)}
+                        >
                           {tag}
                         </Badge>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                点击标签可筛选相关网站
+              </p>
             </CardContent>
           </Card>
               </div>

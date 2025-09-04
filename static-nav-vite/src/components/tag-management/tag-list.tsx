@@ -1,51 +1,83 @@
 import React, { useState } from 'react';
-import { Tag, TagRelation, Website } from '../../types/website';
+import { Tag, Website } from '../../types/website';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Edit, Trash2, Search, Network } from 'lucide-react';
+import { Edit, Trash2, Search, Filter, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  color: string;
+  createdDate: string;
+}
 
 interface TagListProps {
   tags: Tag[];
-  relations: TagRelation[];
   websites: Website[];
+  allWebsiteTags: Record<string, number>;
+  categories: Category[];
   onEditTag: (tag: Tag) => void;
   onDeleteTag: (tagId: string) => void;
-  onSelectTag: (tag: Tag) => void;
+  onFilterByTag?: (tagName: string) => void;
 }
 
 export function TagList({ 
   tags, 
-  relations, 
   websites, 
+  allWebsiteTags,
+  categories,
   onEditTag, 
-  onDeleteTag, 
-  onSelectTag 
+  onDeleteTag,
+  onFilterByTag
 }: TagListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [sortBy, setSortBy] = useState<'name' | 'websiteCount' | 'createdDate'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const categories = ['all', ...Array.from(new Set(tags.map(t => t.category).filter(Boolean)))];
+  const categoryNames = ['all', ...categories.map(c => c.name)];
 
-  // 筛选标签
-  const filteredTags = tags.filter(tag => {
-    const matchesSearch = tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (tag.description && tag.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesCategory = filterCategory === 'all' || tag.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // 筛选和排序标签
+  const filteredAndSortedTags = React.useMemo(() => {
+    let filtered = tags.filter(tag => {
+      const matchesSearch = tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           (tag.description && tag.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesCategory = filterCategory === 'all' || tag.category === filterCategory;
+      return matchesSearch && matchesCategory;
+    });
+
+    // 排序
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'websiteCount':
+          const countA = allWebsiteTags[a.name] || 0;
+          const countB = allWebsiteTags[b.name] || 0;
+          comparison = countA - countB;
+          break;
+        case 'createdDate':
+          comparison = new Date(a.createdDate || '').getTime() - new Date(b.createdDate || '').getTime();
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [tags, searchQuery, filterCategory, sortBy, sortOrder, allWebsiteTags]);
 
   // 获取标签统计信息
   const getTagStats = (tag: Tag) => {
-    const websiteCount = websites.filter(w => w.tags.includes(tag.name)).length;
-    const relatedCount = relations.filter(r => r.fromTagId === tag.id || r.toTagId === tag.id).length;
-    const avgStrength = relations
-      .filter(r => r.fromTagId === tag.id || r.toTagId === tag.id)
-      .reduce((sum, r) => sum + r.strength, 0) / Math.max(relatedCount, 1);
-    
-    return { websiteCount, relatedCount, avgStrength };
+    const websiteCount = allWebsiteTags[tag.name] || 0;
+    return { websiteCount };
   };
 
   return (
@@ -66,18 +98,36 @@ export function TagList({
             <SelectValue placeholder="选择分类" />
           </SelectTrigger>
           <SelectContent>
-            {categories.map(category => (
+            {categoryNames.map(category => (
               <SelectItem key={category} value={category!}>
                 {category === 'all' ? '全部分类' : category}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <Select value={sortBy} onValueChange={(value: 'name' | 'websiteCount' | 'createdDate') => setSortBy(value)}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder="排序方式" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">按名称</SelectItem>
+            <SelectItem value="websiteCount">按网站数量</SelectItem>
+            <SelectItem value="createdDate">按创建时间</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+          className="w-full sm:w-auto"
+        >
+          {sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+        </Button>
       </div>
 
       {/* 标签列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredTags.map(tag => {
+        {filteredAndSortedTags.map(tag => {
           const stats = getTagStats(tag);
           
           return (
@@ -95,14 +145,17 @@ export function TagList({
                     )}
                   </div>
                   <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onSelectTag(tag)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Network className="h-4 w-4" />
-                    </Button>
+                    {onFilterByTag && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onFilterByTag(tag.name)}
+                        className="h-8 w-8 p-0"
+                        title="筛选此标签的网站"
+                      >
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -137,25 +190,11 @@ export function TagList({
                     </span>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <div className="text-lg font-semibold text-blue-600">
-                        {stats.websiteCount}
-                      </div>
-                      <div className="text-xs text-muted-foreground">网站</div>
+                  <div className="text-center">
+                    <div className="text-2xl font-semibold text-blue-600">
+                      {stats.websiteCount}
                     </div>
-                    <div>
-                      <div className="text-lg font-semibold text-green-600">
-                        {stats.relatedCount}
-                      </div>
-                      <div className="text-xs text-muted-foreground">关联</div>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold text-purple-600">
-                        {stats.avgStrength.toFixed(1)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">强度</div>
-                    </div>
+                    <div className="text-sm text-muted-foreground">使用此标签的网站数量</div>
                   </div>
                 </div>
               </CardContent>
@@ -164,7 +203,7 @@ export function TagList({
         })}
       </div>
 
-      {filteredTags.length === 0 && (
+      {filteredAndSortedTags.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
           <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>没有找到匹配的标签</p>

@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Website } from '../types/website';
 import { WebsiteCard } from './website/website-card';
-import { Pagination } from './pagination';
+import { Pagination } from './Pagination';
+import { AdvancedFilterSidebar } from './advanced-filter-sidebar';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
@@ -38,6 +39,18 @@ import {
 type SortType = 'default' | 'name' | 'clicks' | 'date';
 type ViewType = 'grid' | 'list';
 
+interface FilterState {
+  searchQuery: string;
+  selectedTags: string[];
+  showFeatured: boolean;
+  isPaidFilter: string;
+  clicksRange: [number, number];
+  dateRange: string;
+  ratingRange: [number, number];
+  languageFilter: string;
+  sortBy: string;
+}
+
 interface NavigationProps {
   websites: Website[];
   onAddWebsite: () => void;
@@ -46,7 +59,6 @@ interface NavigationProps {
   onViewWebsite: (website: Website) => void;
   onShareWebsite: (website: Website) => void;
   onCreateShare?: () => void;
-  onAdvancedFilter?: () => void;
 }
 
 export function Navigation({
@@ -56,71 +68,130 @@ export function Navigation({
   onDeleteWebsite,
   onViewWebsite,
   onShareWebsite,
-  onCreateShare,
-  onAdvancedFilter
+  onCreateShare
 }: NavigationProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  // 高级筛选状态
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<FilterState>({
+    searchQuery: '',
+    selectedTags: [],
+    showFeatured: false,
+    isPaidFilter: 'all',
+    clicksRange: [0, 100000],
+    dateRange: 'all',
+    ratingRange: [0, 5],
+    languageFilter: 'all',
+    sortBy: 'default'
+  });
 
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showFeatured, setShowFeatured] = useState(false);
-  const [sortBy, setSortBy] = useState<SortType>('default');
+  // 基础状态
+  const [searchQuery, setSearchQuery] = useState('');
   const [viewType, setViewType] = useState<ViewType>('grid');
   
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
-  // 获取常用标签（按使用频率排序，取前8个）
-  const popularTags = useMemo(() => {
-    const tagsWithCounts = mockTags.map(tag => {
-      const count = websites.filter(website => 
-        website.tags.includes(tag.name)
-      ).length;
-      return { ...tag, count };
-    }).filter(tag => tag.count > 0)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
-    
-    return tagsWithCounts;
-  }, [websites]);
 
-  const toggleTag = (tagName: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagName) 
-        ? prev.filter(t => t !== tagName)
-        : [...prev, tagName]
-    );
+  // 处理高级筛选更新
+  const handleAdvancedFiltersChange = (newFilters: FilterState) => {
+    setAdvancedFilters(newFilters);
+    setSearchQuery(newFilters.searchQuery);
+    setCurrentPage(1);
   };
 
+  // 获取动态范围
+  const dynamicClicksRange = useMemo((): [number, number] => {
+    const clicks = websites.map(w => w.clicks || 0);
+    return clicks.length > 0 ? [Math.min(...clicks), Math.max(...clicks)] : [0, 100000];
+  }, [websites]);
+
+  const dynamicRatingRange = useMemo((): [number, number] => {
+    const ratings = websites.map(w => w.rating || 0).filter(r => r > 0);
+    return ratings.length > 0 ? [Math.min(...ratings), Math.max(...ratings)] : [0, 5];
+  }, [websites]);
+
   const clearFilters = () => {
+    const clearedFilters: FilterState = {
+      searchQuery: '',
+      selectedTags: [],
+      showFeatured: false,
+      isPaidFilter: 'all',
+      clicksRange: dynamicClicksRange,
+      dateRange: 'all',
+      ratingRange: dynamicRatingRange,
+      languageFilter: 'all',
+      sortBy: 'default'
+    };
+    setAdvancedFilters(clearedFilters);
     setSearchQuery('');
-    setSelectedTags([]);
-    setShowFeatured(false);
-    setSortBy('default');
     setCurrentPage(1);
   };
 
   // 过滤和排序网站
   const allFilteredWebsites = useMemo(() => {
+    const filters = advancedFilters;
+    
     const filtered = websites.filter(website => {
-      const matchesSearch = website.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           website.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           website.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      // 搜索匹配
+      const matchesSearch = !filters.searchQuery || 
+        website.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        website.description.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        website.tags.some(tag => tag.toLowerCase().includes(filters.searchQuery.toLowerCase()));
       
-      const matchesCategory = true; // 移除分类筛选，始终匹配
-      const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => website.tags.includes(tag));
-      const matchesFeatured = !showFeatured || website.featured;
+      // 标签匹配
+      const matchesTags = filters.selectedTags.length === 0 || 
+        filters.selectedTags.every(tag => website.tags.includes(tag));
       
-      return matchesSearch && matchesCategory && matchesTags && matchesFeatured;
+      // 精选匹配
+      const matchesFeatured = !filters.showFeatured || website.featured;
+      
+      // 付费状态匹配
+      const matchesPaid = filters.isPaidFilter === 'all' || 
+        (filters.isPaidFilter === 'free' && !website.isPaid) ||
+        (filters.isPaidFilter === 'paid' && website.isPaid);
+      
+      // 点击量匹配
+      const clicks = website.clicks || 0;
+      const matchesClicks = clicks >= filters.clicksRange[0] && clicks <= filters.clicksRange[1];
+      
+      // 评分匹配
+      const rating = website.rating || 0;
+      const matchesRating = rating >= filters.ratingRange[0] && rating <= filters.ratingRange[1];
+      
+      // 添加时间匹配
+      const matchesDate = filters.dateRange === 'all' || (() => {
+        const addedDate = new Date(website.addedDate);
+        const now = new Date();
+        const diffTime = now.getTime() - addedDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        switch (filters.dateRange) {
+          case 'week': return diffDays <= 7;
+          case 'month': return diffDays <= 30;
+          case 'year': return diffDays <= 365;
+          default: return true;
+        }
+      })();
+      
+      // 语言匹配
+      const matchesLanguage = filters.languageFilter === 'all' || 
+        website.language === filters.languageFilter;
+      
+      return matchesSearch && matchesTags && matchesFeatured && matchesPaid && 
+             matchesClicks && matchesRating && matchesDate && matchesLanguage;
     });
 
     // 排序
-    switch (sortBy) {
+    switch (filters.sortBy) {
       case 'name':
         filtered.sort((a, b) => a.title.localeCompare(b.title));
         break;
       case 'clicks':
-        filtered.sort((a, b) => b.clicks - a.clicks);
+        filtered.sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
+        break;
+      case 'rating':
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'date':
         filtered.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime());
@@ -130,7 +201,7 @@ export function Navigation({
     }
 
     return filtered;
-  }, [websites, searchQuery, selectedTags, showFeatured, sortBy]);
+  }, [websites, advancedFilters]);
 
   // 分页计算
   const totalPages = Math.ceil(allFilteredWebsites.length / itemsPerPage);
@@ -149,7 +220,39 @@ export function Navigation({
   // 监听筛选条件变化
   React.useEffect(() => {
     resetToFirstPage();
-  }, [searchQuery, selectedTags, showFeatured, sortBy, itemsPerPage]);
+  }, [advancedFilters, itemsPerPage]);
+
+  // 监听localStorage中的标签和分类筛选
+  React.useEffect(() => {
+    const filterByTag = localStorage.getItem('filterByTag');
+    const filterByCategory = localStorage.getItem('filterByCategory');
+    
+    if (filterByTag) {
+      handleAdvancedFiltersChange({
+        ...advancedFilters,
+        selectedTags: [filterByTag]
+      });
+      localStorage.removeItem('filterByTag');
+    }
+    
+    if (filterByCategory) {
+      // 获取该分类下的所有标签
+      const categoryTags = websites
+        .filter(website => website.tags.some(tag => {
+          // 这里需要根据实际的分类逻辑来筛选
+          // 暂时使用简单的标签匹配
+          return tag === filterByCategory;
+        }))
+        .flatMap(website => website.tags)
+        .filter((tag, index, array) => array.indexOf(tag) === index); // 去重
+      
+      handleAdvancedFiltersChange({
+        ...advancedFilters,
+        selectedTags: categoryTags
+      });
+      localStorage.removeItem('filterByCategory');
+    }
+  }, []);
 
   // 分页处理函数
   const handlePageChange = (page: number) => {
@@ -163,44 +266,55 @@ export function Navigation({
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchQuery || selectedTags.length > 0 || showFeatured;
+  const hasActiveFilters = advancedFilters.searchQuery || 
+    advancedFilters.selectedTags.length > 0 || 
+    advancedFilters.showFeatured ||
+    advancedFilters.isPaidFilter !== 'all' ||
+    advancedFilters.clicksRange[0] > dynamicClicksRange[0] ||
+    advancedFilters.clicksRange[1] < dynamicClicksRange[1] ||
+    advancedFilters.dateRange !== 'all' ||
+    advancedFilters.ratingRange[0] > dynamicRatingRange[0] ||
+    advancedFilters.ratingRange[1] < dynamicRatingRange[1] ||
+    advancedFilters.languageFilter !== 'all';
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* 页面标题和操作按钮 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl">网站导航</h2>
-          <p className="text-muted-foreground mt-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <h2 className="text-lg sm:text-xl">网站导航</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             发现优质网站资源，提升工作效率
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {onCreateShare && (
-            <Button variant="outline" onClick={onCreateShare} className="gap-2">
+            <Button variant="outline" onClick={onCreateShare} className="gap-2 text-sm">
               <Share className="w-4 h-4" />
-              创建分享
+              <span className="hidden sm:inline">创建分享</span>
             </Button>
           )}
-          {onAdvancedFilter && (
-            <Button variant="outline" onClick={onAdvancedFilter} className="gap-2">
-              <Settings className="w-4 h-4" />
-              高级筛选
-            </Button>
-          )}
-          <Button variant="outline" onClick={onAddWebsite} className="gap-2 shadow-lg">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAdvancedFilter(true)} 
+            className="gap-2 text-sm"
+          >
+            <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">高级筛选</span>
+          </Button>
+          <Button variant="outline" onClick={onAddWebsite} className="gap-2 shadow-lg text-sm">
             <Plus className="w-4 h-4" />
-            添加网站
+            <span className="hidden sm:inline">添加网站</span>
           </Button>
         </div>
       </div>
 
-      {/* 搜索和筛选区域 */}
+      {/* 搜索区域 */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
-            {/* 主要筛选控件 */}
-            <div className="flex gap-4">
+            {/* 搜索控件 */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
@@ -211,133 +325,27 @@ export function Navigation({
                 />
               </div>
               
-
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <Filter className="w-4 h-4" />
-                    筛选
-                    {(selectedTags.length > 0 || showFeatured) && (
-                      <Badge variant="secondary" className="ml-1 px-1 py-0 text-xs">
-                        {selectedTags.length + (showFeatured ? 1 : 0)}
-                      </Badge>
-                    )}
+              <div className="flex flex-wrap gap-2 sm:gap-4">
+                <div className="flex border rounded-lg p-1">
+                  <Button
+                    variant={viewType === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewType('grid')}
+                    className="px-2 sm:px-3"
+                    title="网格视图"
+                  >
+                    <Grid3X3 className="w-4 h-4" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-80">
-                  <DropdownMenuLabel>筛选选项</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem onClick={() => setShowFeatured(!showFeatured)}>
-                    <Star className="w-4 h-4 mr-2" />
-                    只看精选 {showFeatured && '✓'}
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <TagIcon className="w-4 h-4 mr-2" />
-                      常用标签
-                      {selectedTags.length > 0 && (
-                        <Badge variant="secondary" className="ml-auto px-1 py-0 text-xs">
-                          {selectedTags.length}
-                        </Badge>
-                      )}
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-56">
-                      <div className="p-2 space-y-2">
-                        <div className="grid grid-cols-2 gap-1">
-                          {popularTags.map(tag => (
-                            <div
-                              key={tag.id}
-                              onClick={() => toggleTag(tag.name)}
-                              className="cursor-pointer"
-                            >
-                              <Badge
-                                variant={selectedTags.includes(tag.name) ? "default" : "outline"}
-                                className="w-full justify-center text-xs transition-colors"
-                                style={selectedTags.includes(tag.name) ? {
-                                  backgroundColor: tag.color,
-                                  borderColor: tag.color,
-                                  color: 'white'
-                                } : {
-                                  borderColor: tag.color + '40',
-                                  color: tag.color
-                                }}
-                              >
-                                {tag.name}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                        {selectedTags.length > 0 && (
-                          <>
-                            <Separator />
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => setSelectedTags([])}
-                              className="w-full text-xs gap-1"
-                            >
-                              <X className="w-3 h-3" />
-                              清除标签
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-                  
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={clearFilters}>
-                    <X className="w-4 h-4 mr-2" />
-                    清除所有筛选
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    {sortBy === 'name' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
-                    排序
+                  <Button
+                    variant={viewType === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewType('list')}
+                    className="px-2 sm:px-3"
+                    title="列表视图"
+                  >
+                    <List className="w-4 h-4" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSortBy('default')}>
-                    默认排序 {sortBy === 'default' && '✓'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('name')}>
-                    按名称排序 {sortBy === 'name' && '✓'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('clicks')}>
-                    按访问量排序 {sortBy === 'clicks' && '✓'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('date')}>
-                    按添加时间排序 {sortBy === 'date' && '✓'}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <div className="flex border rounded-lg p-1">
-                <Button
-                  variant={viewType === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewType('grid')}
-                  className="px-3"
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewType === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewType('list')}
-                  className="px-3"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
+                </div>
               </div>
             </div>
 
@@ -345,26 +353,32 @@ export function Navigation({
             {hasActiveFilters && (
               <div className="flex flex-wrap items-center gap-2 p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm text-muted-foreground">已选择:</span>
-                {showFeatured && (
+                {advancedFilters.showFeatured && (
                   <Badge variant="secondary" className="gap-1">
                     <Star className="w-3 h-3" />
                     精选
-                    <X className="w-3 h-3 cursor-pointer" onClick={() => setShowFeatured(false)} />
+                    <X className="w-3 h-3 cursor-pointer" onClick={() => handleAdvancedFiltersChange({...advancedFilters, showFeatured: false})} />
                   </Badge>
                 )}
-                {selectedTags.map(tagName => {
-                  const tag = popularTags.find(t => t.name === tagName);
-                  return tag ? (
-                    <Badge
-                      key={tagName}
-                      className="gap-1 cursor-pointer"
-                      style={{ backgroundColor: tag.color + '20', color: tag.color, borderColor: tag.color }}
-                    >
-                      {tagName}
-                      <X className="w-3 h-3" onClick={() => toggleTag(tagName)} />
-                    </Badge>
-                  ) : null;
-                })}
+                {advancedFilters.selectedTags.map(tagName => (
+                  <Badge
+                    key={tagName}
+                    variant="secondary"
+                    className="gap-1 cursor-pointer"
+                  >
+                    {tagName}
+                    <X className="w-3 h-3" onClick={() => {
+                      const newTags = advancedFilters.selectedTags.filter(t => t !== tagName);
+                      handleAdvancedFiltersChange({...advancedFilters, selectedTags: newTags});
+                    }} />
+                  </Badge>
+                ))}
+                {advancedFilters.isPaidFilter !== 'all' && (
+                  <Badge variant="outline" className="gap-1">
+                    {advancedFilters.isPaidFilter === 'free' ? '免费' : '付费'}
+                    <X className="w-3 h-3 cursor-pointer" onClick={() => handleAdvancedFiltersChange({...advancedFilters, isPaidFilter: 'all'})} />
+                  </Badge>
+                )}
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -393,8 +407,8 @@ export function Navigation({
         <>
           <div className={
             viewType === 'grid' 
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              : "space-y-4"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6"
+              : "space-y-2"
           }>
             {paginatedWebsites.map((website) => (
               <WebsiteCard
@@ -404,6 +418,7 @@ export function Navigation({
                 onDelete={onDeleteWebsite}
                 onView={onViewWebsite}
                 onShare={onShareWebsite}
+                viewType={viewType}
               />
             ))}
           </div>
@@ -442,6 +457,15 @@ export function Navigation({
           </Button>
         </div>
       )}
+
+      {/* 高级筛选侧边栏 */}
+      <AdvancedFilterSidebar
+        isOpen={showAdvancedFilter}
+        onClose={() => setShowAdvancedFilter(false)}
+        websites={websites}
+        onFiltersChange={handleAdvancedFiltersChange}
+        initialFilters={advancedFilters}
+      />
     </div>
   );
 }

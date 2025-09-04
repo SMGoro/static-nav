@@ -1,36 +1,87 @@
-import React, { useState } from 'react';
-import { Tag, TagRelation, Website } from '../../types/website';
+import React, { useState, useMemo } from 'react';
+import { Tag, Website } from '../../types/website';
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  color: string;
+  createdDate: string;
+}
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { 
   Plus, 
-  Network, 
   Tag as TagIcon, 
   BarChart3,
-  Link
+  Folder,
+  Settings
 } from 'lucide-react';
-import { mockTags, mockTagRelations } from '../../data/mock-data';
-import { TagNetwork } from '../tag-network';
+import { mockTags } from '../../data/mock-data';
+import { getRandomColor } from '../../utils/common';
 import { TagOverview } from './tag-overview';
 import { TagList } from './tag-list';
 import { TagForm } from './tag-form';
-import { TagRelationManager } from './tag-relation-manager';
+import { CategoryManager } from './category-manager';
 
 interface TagManagementProps {
   websites: Website[];
+  onFilterByTag?: (tagName: string) => void;
+  onFilterByCategory?: (categoryName: string) => void;
 }
 
-export function TagManagement({ websites }: TagManagementProps) {
-  const [tags, setTags] = useState<Tag[]>(mockTags);
-  const [relations, setRelations] = useState<TagRelation[]>(mockTagRelations);
-  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+export function TagManagement({ websites, onFilterByTag, onFilterByCategory }: TagManagementProps) {
+  const [tags, setTags] = useState<Tag[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [categories, setCategories] = useState([
+    { id: 'cat_1', name: '开发工具', description: '编程开发相关工具', color: '#3b82f6', createdDate: new Date().toISOString() },
+    { id: 'cat_2', name: '设计工具', description: 'UI/UX设计相关工具', color: '#ef4444', createdDate: new Date().toISOString() },
+    { id: 'cat_3', name: 'AI工具', description: '人工智能相关工具', color: '#10b981', createdDate: new Date().toISOString() },
+    { id: 'cat_4', name: '学习资源', description: '在线学习和教育资源', color: '#f59e0b', createdDate: new Date().toISOString() },
+  ] as Category[]);
 
-  // 获取现有分类
-  const existingCategories = Array.from(new Set(tags.map(t => t.category).filter(Boolean))) as string[];
+  // 从网站数据中提取所有标签并计算使用频率
+  const allWebsiteTags = useMemo(() => {
+    const tagCounts: Record<string, number> = {};
+    websites.forEach(website => {
+      website.tags.forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      });
+    });
+    return tagCounts;
+  }, [websites]);
+
+  // 从网站数据中生成标签对象
+  const generatedTags = useMemo(() => {
+    const tagMap = new Map<string, Tag>();
+    
+    // 从网站数据中提取所有标签
+    Object.entries(allWebsiteTags).forEach(([tagName, count]) => {
+      const newTag: Tag = {
+        id: `tag_${tagName.replace(/\s+/g, '_').toLowerCase()}`,
+        name: tagName,
+        count: count,
+        color: getRandomColor(),
+        category: '未分类', // 默认分类
+        createdDate: new Date().toISOString(),
+        isCore: false
+      };
+      tagMap.set(tagName, newTag);
+    });
+    
+    return Array.from(tagMap.values());
+  }, [allWebsiteTags]);
+
+  // 当网站数据变化时，更新标签列表
+  React.useEffect(() => {
+    setTags(generatedTags);
+  }, [generatedTags]);
+
+  // 获取现有分类名称
+  const existingCategories = categories.map(c => c.name);
 
   // 添加/编辑标签
   const handleSaveTag = (tag: Tag) => {
@@ -45,25 +96,6 @@ export function TagManagement({ websites }: TagManagementProps) {
   // 删除标签
   const handleDeleteTag = (tagId: string) => {
     setTags(prev => prev.filter(t => t.id !== tagId));
-    setRelations(prev => prev.filter(r => r.fromTagId !== tagId && r.toTagId !== tagId));
-    if (selectedTag?.id === tagId) {
-      setSelectedTag(null);
-    }
-  };
-
-  // 添加关系
-  const handleAddRelation = (relation: TagRelation) => {
-    setRelations(prev => [...prev, relation]);
-  };
-
-  // 编辑关系
-  const handleEditRelation = (relation: TagRelation) => {
-    setRelations(prev => prev.map(r => r.id === relation.id ? relation : r));
-  };
-
-  // 删除关系
-  const handleDeleteRelation = (relationId: string) => {
-    setRelations(prev => prev.filter(r => r.id !== relationId));
   };
 
   // 开始添加标签
@@ -76,12 +108,6 @@ export function TagManagement({ websites }: TagManagementProps) {
   const handleStartEditTag = (tag: Tag) => {
     setEditingTag(tag);
     setIsAddingTag(true);
-  };
-
-  // 选择标签（用于网络视图）
-  const handleSelectTag = (tag: Tag) => {
-    setSelectedTag(tag);
-    setActiveTab('network');
   };
 
   return (
@@ -102,7 +128,7 @@ export function TagManagement({ websites }: TagManagementProps) {
 
       {/* 标签页 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
             数据概览
@@ -111,13 +137,9 @@ export function TagManagement({ websites }: TagManagementProps) {
             <TagIcon className="w-4 h-4" />
             标签管理
           </TabsTrigger>
-          <TabsTrigger value="relations" className="flex items-center gap-2">
-            <Link className="w-4 h-4" />
-            关系管理
-          </TabsTrigger>
-          <TabsTrigger value="network" className="flex items-center gap-2">
-            <Network className="w-4 h-4" />
-            网络视图
+          <TabsTrigger value="categories" className="flex items-center gap-2">
+            <Folder className="w-4 h-4" />
+            分类管理
           </TabsTrigger>
         </TabsList>
 
@@ -125,8 +147,8 @@ export function TagManagement({ websites }: TagManagementProps) {
         <TabsContent value="overview" className="space-y-6">
           <TagOverview 
             tags={tags}
-            relations={relations}
             websites={websites}
+            allWebsiteTags={allWebsiteTags}
           />
         </TabsContent>
 
@@ -134,44 +156,26 @@ export function TagManagement({ websites }: TagManagementProps) {
         <TabsContent value="tags" className="space-y-6">
           <TagList
             tags={tags}
-            relations={relations}
             websites={websites}
+            allWebsiteTags={allWebsiteTags}
+            categories={categories}
             onEditTag={handleStartEditTag}
             onDeleteTag={handleDeleteTag}
-            onSelectTag={handleSelectTag}
+            onFilterByTag={onFilterByTag}
           />
         </TabsContent>
 
-        {/* 关系管理 */}
-        <TabsContent value="relations" className="space-y-6">
-          <TagRelationManager
+        {/* 分类管理 */}
+        <TabsContent value="categories" className="space-y-6">
+          <CategoryManager
             tags={tags}
-            relations={relations}
-            onAddRelation={handleAddRelation}
-            onEditRelation={handleEditRelation}
-            onDeleteRelation={handleDeleteRelation}
+            websites={websites}
+            allWebsiteTags={allWebsiteTags}
+            categories={categories}
+            onTagsUpdate={setTags}
+            onCategoriesUpdate={setCategories}
+            onFilterByCategory={onFilterByCategory}
           />
-        </TabsContent>
-
-        {/* 网络视图 */}
-        <TabsContent value="network" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Network className="w-5 h-5" />
-                标签关系网络
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TagNetwork 
-                tags={tags}
-                relations={relations}
-                websites={websites}
-                selectedTag={selectedTag}
-                onTagSelect={setSelectedTag}
-              />
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
 
@@ -182,6 +186,7 @@ export function TagManagement({ websites }: TagManagementProps) {
         onSave={handleSaveTag}
         editingTag={editingTag}
         existingCategories={existingCategories}
+        allWebsiteTags={allWebsiteTags}
       />
     </div>
   );

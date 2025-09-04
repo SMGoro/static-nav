@@ -33,9 +33,10 @@ interface WebsiteDetailProps {
   onBack: () => void;
   onEdit: (website: Website) => void;
   onShare: (website: Website) => void;
+  onFilterByTag?: (tagName: string) => void;
 }
 
-export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetailProps) {
+export function WebsiteDetail({ website, onBack, onEdit, onShare, onFilterByTag }: WebsiteDetailProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
   const handleVisitWebsite = () => {
@@ -152,7 +153,12 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                       </Badge>
                     )}
                     {website.tags.slice(0, 5).map((tag) => (
-                      <Badge key={tag} variant="outline">
+                      <Badge 
+                        key={tag} 
+                        variant="outline"
+                        className={onFilterByTag ? "cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors" : ""}
+                        onClick={onFilterByTag ? () => onFilterByTag(tag) : undefined}
+                      >
                         {tag}
                       </Badge>
                     ))}
@@ -283,11 +289,21 @@ export function WebsiteDetail({ website, onBack, onEdit, onShare }: WebsiteDetai
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {website.tags.map((tag, index) => (
-                        <Badge key={`${tag}-${index}`} variant="secondary" className="text-xs">
+                        <Badge 
+                          key={`${tag}-${index}`} 
+                          variant="secondary" 
+                          className={`text-xs ${onFilterByTag ? "cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors" : ""}`}
+                          onClick={onFilterByTag ? () => onFilterByTag(tag) : undefined}
+                        >
                           {tag}
                         </Badge>
                       ))}
                     </div>
+                    {onFilterByTag && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        点击标签可筛选相关网站
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </div>

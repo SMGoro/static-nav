@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Website } from './types/website';
-import { Navigation } from './components/navigation';
+import { Navigation } from './components/Navigation';
 
 import { WebsiteForm } from './components/website-form';
 import { ShareDialog } from './components/share-dialog';
 import { ImportConfirmDialog } from './components/data-management/import-confirm-dialog';
 import { AIRecommendation } from './components/ai/ai-recommendation';
 import { TagManagement } from './components/tag-management/tag-management';
-import { DetailedTagFilter } from './components/detailed-tag-filter';
 import { DataManager } from './components/data-management/data-manager';
 import { WebsiteDetailPage } from './components/website/website-detail-page';
 import { ShareTest } from './components/share-test';
@@ -19,7 +18,8 @@ import { SEOHead } from './components/seo-head';
 
 import { Button } from './components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
-import { Bot, Home, Plus, Tag, Filter, Menu, X, Database, TestTube } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './components/ui/dropdown-menu';
+import { Bot, Home, Plus, Tag, Filter, Menu, X, Database, TestTube, ChevronDown } from 'lucide-react';
 import { dataManager, AppData, ShareData, DuplicateCheckResult } from './utils/data-manager';
 import { toast, Toaster } from 'sonner';
 
@@ -88,6 +88,20 @@ function AppContent() {
 
   const handleViewWebsite = (website: Website) => {
     navigate(`/website/${website.slug || website.id}`);
+  };
+
+  const handleFilterByTag = (tagName: string) => {
+    // 跳转到主页并设置标签筛选
+    navigate('/');
+    // 这里可以通过状态管理或URL参数来设置筛选条件
+    // 暂时使用localStorage来传递筛选信息
+    localStorage.setItem('filterByTag', tagName);
+  };
+
+  const handleFilterByCategory = (categoryName: string) => {
+    // 跳转到主页并设置分类筛选
+    navigate('/');
+    localStorage.setItem('filterByCategory', categoryName);
   };
 
   const handleAddWebsite = () => {
@@ -231,10 +245,6 @@ function AppContent() {
     setShareData(shareData);
   };
 
-  const handleAdvancedFilter = () => {
-    navigate('/filter');
-    setMobileMenuOpen(false);
-  };
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -255,7 +265,6 @@ function AppContent() {
           onViewWebsite={handleViewWebsite}
           onShareWebsite={handleShareWebsite}
           onCreateShare={() => setShowShareDialog(true)}
-          onAdvancedFilter={handleAdvancedFilter}
         />
       );
     }
@@ -295,24 +304,14 @@ function AppContent() {
     
     if (path === '/tags') {
       return (
-        <TagManagement
+        <TagManagement 
           websites={websites}
+          onFilterByTag={handleFilterByTag}
+          onFilterByCategory={handleFilterByCategory}
         />
       );
     }
     
-    if (path === '/filter') {
-      return (
-        <DetailedTagFilter
-          websites={websites}
-          onBack={() => navigate('/')}
-          onEditWebsite={handleEditWebsite}
-          onDeleteWebsite={handleDeleteWebsite}
-          onViewWebsite={handleViewWebsite}
-          onShareWebsite={handleShareWebsite}
-        />
-      );
-    }
     
     if (path === '/data') {
       return (
@@ -329,7 +328,7 @@ function AppContent() {
     return <Navigate to="/" replace />;
   };
 
-  const showHeader = !location.pathname.startsWith('/website/') && location.pathname !== '/filter';
+  const showHeader = !location.pathname.startsWith('/website/');
 
   const navigationItems = [
     {
@@ -343,12 +342,6 @@ function AppContent() {
       icon: Tag,
       label: '标签管理',
       action: () => handleNavigation('/tags')
-    },
-    {
-      key: '/filter',
-      icon: Filter,
-      label: '高级筛选',
-      action: () => handleNavigation('/filter')
     },
     {
       key: '/ai',
@@ -386,7 +379,7 @@ function AppContent() {
             <div className="flex items-center justify-between">
               {/* 左侧：Logo 和导航 */}
               <div className="flex items-center min-w-0">
-                <h1 className="text-sm sm:text-xl mr-3 sm:mr-6 flex-shrink-0">导航站</h1>
+                <h2 className="text-sm sm:text-xl mr-3 sm:mr-6 flex-shrink-0">导航站</h2>
                 
                 {/* 桌面端导航 */}
                 <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
@@ -422,48 +415,41 @@ function AppContent() {
 
                 {/* 移动端菜单按钮 */}
                 <div className="md:hidden">
-                  <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="sm" className="px-2">
+                  <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="px-2 gap-1">
                         <Menu className="w-4 h-4" />
+                        <ChevronDown className="w-3 h-3" />
                       </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-64 p-0">
-                      <div className="flex flex-col h-full">
-                        <div className="flex items-center justify-between p-4 border-b">
-                          <h2 className="text-lg">导航菜单</h2>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="px-2"
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      align="end" 
+                      className="w-56 mt-2 p-2"
+                      sideOffset={8}
+                    >
+                      <div className="space-y-1">
+                        {navigationItems.map((item) => (
+                          <DropdownMenuItem
+                            key={item.key}
+                            onClick={item.action}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                              location.pathname === item.key 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'hover:bg-accent hover:text-accent-foreground'
+                            }`}
                           >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <nav className="flex-1 p-4">
-                          <div className="space-y-2">
-                            {navigationItems.map((item) => (
-                              <Button
-                                key={item.key}
-                                variant={location.pathname === item.key ? 'default' : 'ghost'}
-                                onClick={item.action}
-                                className="w-full justify-start gap-3 h-12"
-                              >
-                                <item.icon className="w-5 h-5" />
-                                <span>{item.label}</span>
-                              </Button>
-                            ))}
-                          </div>
-                        </nav>
-                        <div className="p-4 border-t">
-                          <div className="text-sm text-muted-foreground text-center">
+                            <item.icon className="w-4 h-4" />
+                            <span className="text-sm">{item.label}</span>
+                          </DropdownMenuItem>
+                        ))}
+                        <div className="border-t pt-2 mt-2">
+                          <div className="text-xs text-muted-foreground text-center px-3 py-1">
                             共收录 {websites.length} 个网站
                           </div>
                         </div>
                       </div>
-                    </SheetContent>
-                  </Sheet>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               
@@ -540,7 +526,6 @@ function AppWithRouter() {
         <Route path="/edit/:id" element={<AppContent />} />
         <Route path="/ai" element={<AppContent />} />
         <Route path="/tags" element={<AppContent />} />
-        <Route path="/filter" element={<AppContent />} />
         <Route path="/data" element={<AppContent />} />
         <Route path="/test" element={<AppContent />} />
         <Route path="/website/:slug" element={<WebsiteDetailPage />} />

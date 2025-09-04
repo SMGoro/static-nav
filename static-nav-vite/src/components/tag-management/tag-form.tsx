@@ -24,6 +24,7 @@ interface TagFormProps {
   onSave: (tag: Tag) => void;
   editingTag?: Tag | null;
   existingCategories: string[];
+  allWebsiteTags?: Record<string, number>;
 }
 
 const defaultColors = [
@@ -37,7 +38,8 @@ export function TagForm({
   onClose, 
   onSave, 
   editingTag, 
-  existingCategories 
+  existingCategories,
+  allWebsiteTags = {}
 }: TagFormProps) {
   const [formData, setFormData] = useState<TagFormData>({
     name: '',
@@ -111,7 +113,7 @@ export function TagForm({
       color: formData.color,
       category: formData.category.trim(),
       isCore: formData.isCore,
-      count: 0,
+      count: allWebsiteTags[formData.name.trim()] || 0,
       createdDate: new Date().toISOString(),
     };
 
