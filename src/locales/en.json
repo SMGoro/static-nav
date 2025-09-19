@@ -1,0 +1,54 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset",
+    "copy": "Copy",
+    "share": "Share",
+    "import": "Import",
+    "export": "Export",
+    "refresh": "Refresh",
+    "settings": "Settings",
+    "help": "Help",
+    "about": "About",
+    "grid": "Grid View",
+    "list": "List View",
+    "free": "Free",
+    "paid": "Paid"
+  },
+  "navigation": {
+    "home": "Home",
+    "tagManagement": "Tag Management",
+    "aiRecommendation": "AI Recommendation",
+    "dataManagement": "Data Management",
+    "shareTest": "Share Test",
+    "addWebsite": "Add Website",
+    "websiteCount": "{{count}} websites"
+  },
+  "messages": {
+    "welcome": "Navigation Site",
+    "noResults": "No matching websites found. Please try adjusting the filters.",
+    "noData": "No websites added yet."
+  },
+  "language": {
+    "switchLanguage": "Switch Language"
+  },
+  "theme": {
+    "system": "System",
+    "dark": "Dark Mode",
+    "light": "Light Mode"
+  }
+}
